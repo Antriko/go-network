@@ -1,6 +1,6 @@
 package client
 
-func game(self *playerInfo) {
-	self.playerMovement()
-	self.renderPlayer()
+func game() {
+	player.playerMovement()
+	player.renderPlayer()
 }

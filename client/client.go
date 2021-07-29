@@ -32,7 +32,7 @@ func Start() {
 		case "menu":
 			menu(buttons)
 		case "game":
-			game(player)
+			game()
 		}
 
 		debugging()
