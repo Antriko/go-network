@@ -6,9 +6,7 @@ package server
 // global
 var userCoords []coords
 
-func Start() {
+func Start() { // goroutine for all except last
 	go serverUserConnect()
-	go serverCoords()
-	for {
-	}
+	serverCoords()
 }
