@@ -5,15 +5,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
+	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 // global
-var player *playerInfo = initPlayer("Drag")
+var player *playerInfo = initPlayer("tmp")
+var camera = NewCustomCamera(10.0, 3.0, 100.0)
 
 func Start() {
+	rand.Seed(time.Now().UnixNano())
+	username := fmt.Sprint(rand.Intn(10000))
+	player.username = username
 
 	screenWidth := int32(1280)
 	screenHeight := int32(720)
@@ -21,14 +27,17 @@ func Start() {
 	rl.SetTargetFPS(60)
 
 	var buttons []button
-	buttons = addButton(buttons, "Play", play)
+	buttons = addButton(buttons, "button 1", play)
 	buttons = addButton(buttons, "test conn", testButton2)
-	state := "menu"
-	for !rl.WindowShouldClose() {
-		rl.BeginDrawing()
 
-		rl.ClearBackground(rl.RayWhite)
-		switch state {
+	rl.SetCameraMode(camera.Camera, rl.CameraCustom) // Set a first person misc.CustomCamera mode
+	dt := rl.GetFrameTime()                          // delta time
+	camera.SetTarget(rl.NewVector3(0.0, 0.0, 0.0))
+	camera.Update(dt)
+
+	for !rl.WindowShouldClose() {
+
+		switch player.state {
 		case "menu":
 			menu(buttons)
 		case "game":
@@ -40,7 +49,6 @@ func Start() {
 		rl.EndDrawing()
 	}
 
-	serverSend("closing")
 	rl.CloseWindow()
 }
 
@@ -68,13 +76,42 @@ func addButton(buttons []button, text string, function func()) []button {
 }
 
 func play() {
-
-	serverSend("ok")
+	go connectUser()
+	player.state = "game"
 	// create player
 
 }
 func testButton2() {
-	serverSend("test")
+	go serverSend("test")
+}
+func connectUser() {
+	p := make([]byte, 1024)
+	conn, err := net.Dial("udp", "localhost:8079")
+	if err != nil {
+		log.Printf("Some error %v", err)
+		return
+	}
+	jsonData, err := json.Marshal(userInfo{player.username})
+
+	if err != nil {
+		log.Printf("Some error %v", err)
+		return
+	}
+
+	fmt.Fprintf(conn, "%s", jsonData) // string vulnerability or something
+	_, err = bufio.NewReader(conn).Read(p)
+	// TODO
+	// Wait for server response (user exists, user continue?) and then go into game
+	if err == nil {
+		fmt.Printf("%s\n", p)
+	} else {
+		fmt.Printf("Some error %v\n", err)
+	}
+	conn.Close()
+}
+
+type userInfo struct {
+	Username string
 }
 
 func serverSend(str string) {
@@ -115,6 +152,9 @@ func debugging() {
 		start += 20
 		return start
 	}
+	rl.DrawText(fmt.Sprintf("Username: %v", player.username), 20, int32(incrY()), 20, rl.Black)
 	rl.DrawText(fmt.Sprintf("FPS: %v", rl.GetFPS()), 20, int32(incrY()), 20, rl.Black)
 	rl.DrawText(fmt.Sprintf("MousePos: %v", rl.GetMousePosition()), 20, int32(incrY()), 20, rl.Black)
+	rl.DrawText(fmt.Sprintf("playerState: %v", player.state), 20, int32(incrY()), 20, rl.Black)
+	rl.DrawText(fmt.Sprintf("playerPos: %v", player.pos), 20, int32(incrY()), 20, rl.Black)
 }

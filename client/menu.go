@@ -5,6 +5,9 @@ package client
 import rl "github.com/gen2brain/raylib-go/raylib"
 
 func menu(buttons []button) {
+	rl.BeginDrawing()
+
+	rl.ClearBackground(rl.RayWhite)
 
 	for i := 0; i < len(buttons); i++ {
 		posY := int32(100 + (150 * i))

@@ -4,9 +4,20 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"time"
 )
 
+// TODO
+// Add last time active and remove user if inactive for certain amount of time
+
+// global
+var users []coordsPacket // where all user coords are stored
+var userCoords []coords
+
 func Start() {
+	go serverUserConnect()
+	go serverCoords()
+
 	log.SetFlags(log.Lshortfile)
 	log.Println("Server start")
 	addr := net.UDPAddr{
@@ -18,50 +29,75 @@ func Start() {
 		log.Println("Network error", err)
 	}
 	for {
-		p := make([]byte, 256) // make new byte every time, rather than overriding (when placed before for)
-		_, client, err := server.ReadFromUDP(p)
+		p := make([]byte, 1024) // make new byte every time, rather than overriding (when placed before for)
+		n, client, err := server.ReadFromUDP(p)
 		if err != nil {
 			log.Println("Network error", err)
 		}
-		log.Printf("CLIENT %v : %s\n", client.Port, p)
-		log.Printf("%+v", p)
 
-		for i := 0; i < len(p); i++ {
-			if p[i] == 0 {
-				p = p[:i]
-				break
-			}
-		}
-		log.Println(p)
+		// remove buffer
+		p = p[0:n]
 
-		var bytes packetInfo
-		jserr := json.Unmarshal(p, &bytes)
-		log.Println(json.Valid(p))
+		var decodedJson coordsPacket
+		jserr := json.Unmarshal(p, &decodedJson)
 		if jserr != nil {
 			log.Println("json err", jserr)
 		}
-		log.Printf("%+v", bytes)
 
-		byte2string := string(p)
-		switch byte2string {
+		log.Printf("CLIENT %v : %s\n", decodedJson.Username, p)
+		switch decodedJson.Message {
 		case "connect":
 			log.Println("connect things")
-		case "disconnect":
-			log.Println("disconnect things")
+			go connectUser(decodedJson, server, client)
+		case "test":
+			go testResponse(server, client)
+		case "coords":
+			go updateCoords(decodedJson, server, client)
 		}
-		go response(server, client)
-
 	}
 }
 
-func response(conn *net.UDPConn, addr *net.UDPAddr) {
-	_, err := conn.WriteToUDP([]byte("SERVER MESSAGE"), addr)
+func updateCoords(data coordsPacket, conn *net.UDPConn, addr *net.UDPAddr) {
+	for i := 0; i < len(users); i++ {
+		if users[i].Username == data.Username {
+			users[i].CoordX = data.CoordX
+			users[i].CoordY = data.CoordY
+			users[i].CoordZ = data.CoordZ
+		}
+	}
+
+	jsonEncoded, err := json.Marshal(users)
+	if err != nil {
+		log.Println(err)
+	}
+	_, jsonErr := conn.WriteToUDP([]byte(jsonEncoded), addr)
+	if jsonErr != nil {
+		log.Println(err)
+	}
+}
+func connectUser(data coordsPacket, conn *net.UDPConn, addr *net.UDPAddr) {
+	tmp := false
+	for i := 0; i < len(users); i++ {
+		if users[i].Username == data.Username {
+			tmp = true
+		}
+	}
+	if !tmp {
+		users = append(users, data)
+	}
+}
+func testResponse(conn *net.UDPConn, addr *net.UDPAddr) {
+	tme := time.Now()
+	_, err := conn.WriteToUDP([]byte(tme.String()), addr)
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-type packetInfo struct {
+type coordsPacket struct {
 	Username string
 	Message  string
+	CoordX   float32
+	CoordY   float32
+	CoordZ   float32
 }
