@@ -22,6 +22,6 @@ func menu(buttons []button) {
 			rl.DrawRectangle(buttons[i].posX, posY, buttons[i].width, buttons[i].height, rl.DarkGray)
 			buttons[i].isHover = false
 		}
-		rl.DrawText(buttons[i].text, buttons[i].posX+10, posY+25, buttons[i].height/2, rl.White)
+		rl.DrawText(buttons[i].text, buttons[i].posX+buttons[i].offsetX, posY+25, buttons[i].height/2, rl.White)
 	}
 }

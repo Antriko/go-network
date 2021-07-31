@@ -27,8 +27,7 @@ func Start() {
 	rl.SetTargetFPS(60)
 
 	var buttons []button
-	buttons = addButton(buttons, "button 1", play)
-	buttons = addButton(buttons, "test conn", testButton2)
+	buttons = addButton(buttons, "play", play)
 
 	rl.SetCameraMode(camera.Camera, rl.CameraCustom) // Set a first person misc.CustomCamera mode
 	dt := rl.GetFrameTime()                          // delta time
@@ -57,17 +56,20 @@ type button struct {
 	function func()
 	isHover  bool
 	posX     int32
+	offsetX  int32
 	width    int32
 	height   int32
 }
 
 func addButton(buttons []button, text string, function func()) []button {
+	// TODO dynamic button width or text center?
 	btn := button{}
 	btn.text = text
 	btn.function = function
 	btn.isHover = false
-	btn.width = 400
 	btn.height = 100
+	btn.offsetX = 100
+	btn.width = rl.MeasureText(text, btn.height/2) + (btn.offsetX * 2)
 	btn.posX = int32(rl.GetScreenWidth()/2) - btn.width
 
 	buttons = append(buttons, btn)
@@ -80,9 +82,6 @@ func play() {
 	player.state = "game"
 	// create player
 
-}
-func testButton2() {
-	go serverSend("test")
 }
 func connectUser() {
 	p := make([]byte, 1024)
@@ -112,37 +111,6 @@ func connectUser() {
 
 type userInfo struct {
 	Username string
-}
-
-func serverSend(str string) {
-	p := make([]byte, 1024)
-	conn, err := net.Dial("udp", "localhost:8080")
-	if err != nil {
-		log.Printf("Some error %v", err)
-		return
-	}
-
-	jsonData, err := json.Marshal(packetInfo{player.username, str})
-
-	if err != nil {
-		log.Printf("Some error %v", err)
-		return
-	}
-
-	log.Println(string(jsonData), jsonData)
-	fmt.Fprintf(conn, "%s", jsonData) // string vulnerability or something
-	_, err = bufio.NewReader(conn).Read(p)
-	if err == nil {
-		fmt.Printf("%s\n", p)
-	} else {
-		fmt.Printf("Some error %v\n", err)
-	}
-	conn.Close()
-}
-
-type packetInfo struct {
-	Username string
-	Message  string
 }
 
 func debugging() {
