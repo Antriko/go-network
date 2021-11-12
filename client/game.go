@@ -104,7 +104,6 @@ func renderOtherTag() {
 }
 
 func renderChat() {
-
 	var chatLen int
 	if len(chatHistory) > 6 {
 		chatLen = len(chatHistory) - 6

@@ -121,7 +121,6 @@ func (player *playerInfo) connectUser() {
 			err = json.Unmarshal(p[:n], &userInfo)
 			log.Println(userInfo)
 			// User connected/disconnected info
-			log.Println("WOAIOSFBNUIOABFUIOASFB")
 			chatHistory = append(chatHistory, ChatMessage{
 				"message",
 				"[SERVER]",
