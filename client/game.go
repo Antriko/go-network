@@ -72,7 +72,6 @@ func sendServerStatus() {
 		//log.Printf("JSON ERR: %v", err)
 		return
 	}
-	log.Println(userCoordsMap)
 	players = userCoordsMap
 }
 

@@ -23,6 +23,7 @@ func Start() {
 	screenWidth := int32(1280)
 	screenHeight := int32(720)
 	rl.InitWindow(screenWidth, screenHeight, "Multiplayer")
+
 	rl.SetTargetFPS(60)
 	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
 
@@ -124,7 +125,7 @@ func (player *playerInfo) connectUser() {
 			chatHistory = append(chatHistory, ChatMessage{
 				"message",
 				"[SERVER]",
-				"User " + userInfo.Username + " has connected.",
+				"User " + userInfo.Username + " has " + userInfo.Info + ".",
 				userInfo.Time,
 			})
 

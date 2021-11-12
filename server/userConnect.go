@@ -31,12 +31,10 @@ func serverUserConnect() {
 			for {
 				n, err := conn.Read(p)
 				usr := findUserInfo(conn, p, n)
-
-				log.Println(string(p[:n]))
-
 				if err != nil {
 					conn.Close()
 					log.Println("User disconnect", usr.Username, err)
+					userDisconnected(conn)
 					return
 				}
 				for _, value := range userConnectionsMap { // key, value
@@ -63,6 +61,27 @@ func findUserInfo(conn *net.TCPConn, p []byte, n int) userConnInfo {
 		}
 		userConnectionsMap[conn] = userConnected
 		return userConnected
+	}
+}
+
+func userDisconnected(conn *net.TCPConn) {
+	// Remove and tell all
+	jsonData, _ := json.Marshal(userInfo{
+		"disconnect",
+		userConnectionsMap[conn].Username,
+		time.Now(),
+	})
+
+	delete(userCoordsMap, userConnectionsMap[conn].Username)
+	for key, value := range chatConnectionsMap {
+		if value.Username == userConnectionsMap[conn].Username {
+			delete(chatConnectionsMap, key)
+		}
+
+	}
+	delete(userConnectionsMap, conn)
+	for _, value := range userConnectionsMap { // key, value
+		fmt.Fprintf(value.Conn, "%s", jsonData)
 	}
 }
 

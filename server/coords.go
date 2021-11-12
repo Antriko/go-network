@@ -58,7 +58,6 @@ func coordUpdate(userCoord coords, conn *net.UDPConn, addr *net.UDPAddr) {
 	if jsonErr != nil {
 		log.Println(err)
 	}
-	log.Println(len(userCoordsMap))
 }
 
 type coords struct {

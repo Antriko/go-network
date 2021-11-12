@@ -56,7 +56,7 @@ func chatConnInit(conn *net.TCPConn, p []byte, n int) {
 }
 
 type ChatMessage struct {
-	typeOf   string
+	Info     string
 	username string
 	message  string
 	time     time.Time

@@ -120,7 +120,6 @@ func (player *playerInfo) connChat() {
 	if err != nil {
 		log.Println("Chat server error", err)
 	}
-	fmt.Fprintf(conn, "%s", player.username)
 	player.chatServerConn = conn
 
 	// handle new chat messages
@@ -137,6 +136,7 @@ func (player *playerInfo) connChat() {
 			err = json.Unmarshal(p[:n], &message)
 			if err != nil {
 				log.Println("Json error", err)
+				return
 			}
 			chatHistory = append(chatHistory, message)
 		}
@@ -164,7 +164,7 @@ func (player *playerInfo) sendChatMessage() {
 }
 
 type ChatMessage struct {
-	typeOf   string // all, PM, local
+	Info     string // all, PM, local
 	Username string
 	Message  string
 	Time     time.Time
