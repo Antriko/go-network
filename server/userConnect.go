@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	"time"
@@ -9,51 +10,70 @@ import (
 
 func serverUserConnect() {
 	log.SetFlags(log.Lshortfile)
-	log.Println("User connect up")
-	addr := net.UDPAddr{
+	addr := net.TCPAddr{
 		Port: 8079,
 		IP:   net.ParseIP("localhost"),
 	}
-	server, err := net.ListenUDP("udp", &addr)
+	server, err := net.ListenTCP("tcp", &addr)
 	if err != nil {
 		log.Println("Network error", err)
 	}
+	log.Printf("User server up at port %d", addr.Port)
 	for {
 		p := make([]byte, 1024) // make new byte every time, rather than overriding (when placed before for)
-		n, client, err := server.ReadFromUDP(p)
+		conn, err := server.AcceptTCP()
 		if err != nil {
 			log.Println("Network error", err)
+			return
 		}
-		p = p[0:n]
-		log.Println(client, p)
-		var tmp userInfo
-		err = json.Unmarshal(p, &tmp)
-		if err != nil {
-			log.Println("Json error", err)
-		}
-		go appendUser(tmp)
-		log.Println(tmp)
+
+		go func() {
+			for {
+				n, err := conn.Read(p)
+				usr := findUserInfo(conn, p, n)
+
+				log.Println(string(p[:n]))
+
+				if err != nil {
+					conn.Close()
+					log.Println("User disconnect", usr.Username, err)
+					return
+				}
+				for _, value := range userConnectionsMap { // key, value
+					fmt.Fprintf(value.Conn, string(p[:n]))
+				}
+			}
+		}()
+
 	}
-}
-func appendUser(user userInfo) {
-	tmp := false
-	for i := 0; i < len(userCoords); i++ {
-		if userCoords[i].Username == user.Username {
-			tmp = true
-		}
-	}
-	if !tmp {
-		tmpCoord := coords{}
-		tmpCoord.Username = user.Username
-		tmpCoord.X, tmpCoord.Y, tmpCoord.Z = 0.0, 0.0, 0.0
-		tmpCoord.LastActivity = time.Now()
-		userCoords = append(userCoords, tmpCoord)
-	} else {
-		log.Println("User already exists") // continue instance?
-	}
-	log.Println(userCoords)
 }
 
-type userInfo struct {
+func findUserInfo(conn *net.TCPConn, p []byte, n int) userConnInfo {
+	var userInfo userInfo
+	_ = json.Unmarshal(p[:n], &userInfo)
+
+	if value, ok := userConnectionsMap[conn]; ok {
+		return value
+	} else {
+		log.Println("Adding new user")
+		// No user
+		userConnected := userConnInfo{
+			conn,
+			userInfo.Username,
+		}
+		userConnectionsMap[conn] = userConnected
+		return userConnected
+	}
+}
+
+type userInfo struct { // TODO Maybe add user customisation ?? Clothing
+	Info     string
 	Username string
+	Time     time.Time
+}
+
+type userConnInfo struct {
+	Conn     *net.TCPConn
+	Username string
+	// userInfo userInfo ??
 }

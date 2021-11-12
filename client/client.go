@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -25,6 +24,7 @@ func Start() {
 	screenHeight := int32(720)
 	rl.InitWindow(screenWidth, screenHeight, "Multiplayer")
 	rl.SetTargetFPS(60)
+	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
 
 	var buttons []button
 	buttons = addButton(buttons, "play", play)
@@ -78,39 +78,89 @@ func addButton(buttons []button, text string, function func()) []button {
 }
 
 func play() {
-	go connectUser()
+	go player.connectUser()
+	go player.connChat()
 	player.state = "game"
 	// create player
 
 }
-func connectUser() {
+func (player *playerInfo) connectUser() {
+
+	addr := net.TCPAddr{
+		Port: 8079,
+		IP:   net.ParseIP("localhost"),
+	}
+	conn, err := net.DialTCP("tcp", nil, &addr)
+	if err != nil {
+		log.Println("Chat server error", err)
+	}
+	player.serverConn = conn
+	jsonData, err := json.Marshal(userInfo{
+		"connect",
+		player.username,
+		time.Now(),
+	})
+	if err != nil {
+		log.Printf("JSON data err %v", err)
+		return
+	}
+	fmt.Fprintf(player.serverConn, "%s", jsonData) // send user init to server
+
+	// handle server response
 	p := make([]byte, 1024)
-	conn, err := net.Dial("udp", "localhost:8079")
-	if err != nil {
-		log.Printf("Some error %v", err)
-		return
-	}
-	jsonData, err := json.Marshal(userInfo{player.username})
+	go func() {
+		for {
+			n, err := player.serverConn.Read(p)
+			if err != nil {
+				log.Println("TCP data err", err)
+			}
+			log.Printf("%s: %s", conn.RemoteAddr().String(), string(p[:n]))
+			// add/remove users
 
-	if err != nil {
-		log.Printf("Some error %v", err)
-		return
-	}
+			var userInfo userInfo
+			err = json.Unmarshal(p[:n], &userInfo)
+			log.Println(userInfo)
+			// User connected/disconnected info
+			log.Println("WOAIOSFBNUIOABFUIOASFB")
+			chatHistory = append(chatHistory, ChatMessage{
+				"message",
+				"[SERVER]",
+				"User " + userInfo.Username + " has connected.",
+				userInfo.Time,
+			})
 
-	fmt.Fprintf(conn, "%s", jsonData) // string vulnerability or something
-	_, err = bufio.NewReader(conn).Read(p)
-	// TODO
-	// Wait for server response (user exists, user continue?) and then go into game
-	if err == nil {
-		fmt.Printf("%s\n", p)
-	} else {
-		fmt.Printf("Some error %v\n", err)
-	}
-	conn.Close()
+		}
+	}()
+
+	// p := make([]byte, 1024)
+	// conn, err := net.Dial("udp", "localhost:8079")
+	// if err != nil {
+	// 	log.Printf("Some error %v", err)
+	// 	return
+	// }
+	// jsonData, err := json.Marshal(userInfo{player.username})
+
+	// if err != nil {
+	// 	log.Printf("Some error %v", err)
+	// 	return
+	// }
+
+	// fmt.Fprintf(conn, "%s", jsonData) // strings vulnerability or something
+	// _, err = bufio.NewReader(conn).Read(p)
+	// // TODO
+	// // Wait for server response (user exists, user continue?) and then go into game
+	// if err == nil {
+	// 	fmt.Printf("%s\n", p)
+	// } else {
+	// 	fmt.Printf("Some error %v\n", err)
+	// }
+	// //conn.Close()
 }
 
 type userInfo struct {
+	Info     string
 	Username string
+	Time     time.Time
 }
 
 func debugging() {
@@ -124,5 +174,7 @@ func debugging() {
 	rl.DrawText(fmt.Sprintf("FPS: %v", rl.GetFPS()), 20, int32(incrY()), 20, rl.Black)
 	rl.DrawText(fmt.Sprintf("MousePos: %v", rl.GetMousePosition()), 20, int32(incrY()), 20, rl.Black)
 	rl.DrawText(fmt.Sprintf("playerState: %v", player.state), 20, int32(incrY()), 20, rl.Black)
+	rl.DrawText(fmt.Sprintf("gameState: %v", player.gameStatus), 20, int32(incrY()), 20, rl.Black)
 	rl.DrawText(fmt.Sprintf("playerPos: %v", player.pos), 20, int32(incrY()), 20, rl.Black)
+	rl.DrawText(fmt.Sprintf("chatMessage: %v", player.chatMessage), 20, int32(incrY()), 20, rl.Black)
 }

@@ -1,12 +1,21 @@
 package server
 
+import "net"
+
 // TODO
-// Add last time active and remove user if inactive for certain amount of time
+// Change from arrays to map
 
 // global
-var userCoords []coords
 
-func Start() { // goroutine for all except last
+// global maps of connections
+var userCoordsMap = make(map[string]coords)                  // UDP
+var userConnectionsMap = make(map[*net.TCPConn]userConnInfo) // TCP
+var chatConnectionsMap = make(map[*net.TCPConn]userConnInfo) // TCP
+
+func Start() { // goroutine for all the for{} loop
 	go serverUserConnect()
-	serverCoords()
+	go serverChat()
+	go serverCoords()
+	for {
+	}
 }

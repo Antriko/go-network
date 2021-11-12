@@ -1,0 +1,5 @@
+{
+    "CHAT_PORT": 8070,
+    "COORDS_PORT": 8071,
+    "USERCONNECT_PORT": 8072
+}
