@@ -50,7 +50,7 @@ func coordUpdate(userCoord coords, conn *net.UDPConn, addr *net.UDPAddr) {
 	for _, value := range userCoordsMap {
 		coordsArray = append(coordsArray, value)
 	}
-	jsonData, err := json.Marshal(coordsArray)
+	jsonData, err := json.Marshal(userCoordsMap)
 	if err != nil {
 		log.Println(err)
 	}

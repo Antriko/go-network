@@ -11,7 +11,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var players []coords
+var players map[string]coords
 var chatHistory []ChatMessage
 var chatScroll = 0
 
@@ -57,7 +57,6 @@ func sendServerStatus() {
 		log.Printf("JSON ERR: %v", err)
 		return
 	}
-	log.Println(string(jsonData))
 
 	fmt.Fprintf(conn, "%s", jsonData) // string vulnerability or something
 	n, err := bufio.NewReader(conn).Read(p)
@@ -67,13 +66,14 @@ func sendServerStatus() {
 	conn.Close()
 	p = p[0:n]
 
-	var playerCoords []coords
-	err = json.Unmarshal(p, &playerCoords)
+	var userCoordsMap = make(map[string]coords)
+	err = json.Unmarshal(p, &userCoordsMap)
 	if err != nil {
 		//log.Printf("JSON ERR: %v", err)
 		return
 	}
-	players = playerCoords
+	log.Println(userCoordsMap)
+	players = userCoordsMap
 }
 
 type coords struct {
@@ -85,19 +85,20 @@ type coords struct {
 }
 
 func renderOthers() {
-	for i := 0; i < len(players); i++ {
-		if players[i].Username != player.username { // dont render self
-			playerPos := rl.NewVector3(players[i].X, players[i].Y, players[i].Z)
+	for key, value := range players {
+		if key != player.username {
+			playerPos := rl.NewVector3(value.X, value.Y, value.Z)
 			rl.DrawCubeWires(playerPos, player.size.X, player.size.Y, player.size.Z, rl.Black) // default size - players
 		}
 	}
 }
 func renderOtherTag() {
-	for i := 0; i < len(players); i++ {
-		if players[i].Username != player.username { // dont render self
-			cubeScreenPosition := rl.GetWorldToScreen(rl.NewVector3(players[i].X, players[i].Y, players[i].Z), camera.Camera)
-			header := players[i].Username
+	for key, value := range players {
+		if key != player.username {
+			cubeScreenPosition := rl.GetWorldToScreen(rl.NewVector3(value.X, value.Y, value.Z), camera.Camera)
+			header := value.Username
 			rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, 100) / 2)), int32(cubeScreenPosition.Y), 20, rl.Black)
+
 		}
 	}
 }
