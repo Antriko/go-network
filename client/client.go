@@ -15,6 +15,8 @@ import (
 var player *playerInfo = initPlayer("tmp")
 var camera = NewCustomCamera(10.0, 3.0, 100.0)
 
+var playerModel = rl.LoadModel("client/models/playerModel.gltf")
+
 func Start() {
 	rand.Seed(time.Now().UnixNano())
 	username := fmt.Sprint(rand.Intn(10000))

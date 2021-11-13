@@ -103,6 +103,7 @@ func (player *playerInfo) playerMovement() {
 
 func (player *playerInfo) renderPlayer() {
 	rl.DrawCubeWires(player.pos, player.size.X, player.size.Y, player.size.Z, rl.Black)
+	// rl.DrawModelWires(playerModel, rl.NewVector3(player.size.X, player.size.Y, player.size.Z), 1, rl.White)
 }
 func (player *playerInfo) renderPlayerTag() {
 	cubeScreenPosition := rl.GetWorldToScreen(rl.NewVector3(player.pos.X, player.pos.Y, player.pos.Z), camera.Camera)
@@ -144,7 +145,6 @@ func (player *playerInfo) connChat() {
 }
 
 func (player *playerInfo) sendChatMessage() {
-	log.Println("SENDING MESSAGE:", player.chatMessage, player.username)
 
 	// send username also
 	jsonData, err := json.Marshal(ChatMessage{
@@ -158,7 +158,6 @@ func (player *playerInfo) sendChatMessage() {
 		return
 	}
 	fmt.Fprintf(player.chatServerConn, "%s", jsonData)
-	log.Printf("DATA: %s", jsonData)
 	player.chatMessage = ""
 
 }
