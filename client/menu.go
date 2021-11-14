@@ -2,7 +2,9 @@
 
 package client
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
 
 func menu(buttons []button) {
 	rl.BeginDrawing()
@@ -24,4 +26,20 @@ func menu(buttons []button) {
 		}
 		rl.DrawText(buttons[i].text, buttons[i].posX+buttons[i].offsetX, posY+25, buttons[i].height/2, rl.White)
 	}
+
+	rl.UpdateCamera(&menuCamera)
+	rl.BeginMode3D(menuCamera)
+	player.showPlayer()
+	rl.EndMode3D()
+}
+
+func (player *playerInfo) showPlayer() {
+
+	pos := rl.NewVector3(0.0, -5.0, -10.0)
+	rl.DrawGrid(10, 1.0)
+
+	rl.DrawModel(player.model.hair, pos, 5.0, rl.White)
+	rl.DrawModel(player.model.head, pos, 5.0, rl.White)
+	rl.DrawModel(player.model.body, pos, 5.0, rl.White)
+	rl.DrawModel(player.model.bottom, pos, 5.0, rl.White)
 }

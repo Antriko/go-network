@@ -14,8 +14,7 @@ import (
 // global
 var player *playerInfo = initPlayer("tmp")
 var camera = NewCustomCamera(10.0, 3.0, 100.0)
-
-var playerModel = rl.LoadModel("client/models/playerModel.gltf")
+var menuCamera = rl.Camera{}
 
 func Start() {
 	rand.Seed(time.Now().UnixNano())
@@ -25,9 +24,23 @@ func Start() {
 	screenWidth := int32(1280)
 	screenHeight := int32(720)
 	rl.InitWindow(screenWidth, screenHeight, "Multiplayer")
+	// playerModel := rl.LoadModel("client/models/playerModel/model.obj")
 
 	rl.SetTargetFPS(60)
 	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
+
+	// obj := rl.LoadModel("models/playerModel/model.obj") // Load OBJ model
+	hair := rl.LoadModel("models/default/hairDefault.glb")
+	head := rl.LoadModel("models/default/headDefault.glb")
+	body := rl.LoadModel("models/default/bodyDefault.glb")
+	bottom := rl.LoadModel("models/default/bottomDefault.glb")
+
+	// texture := rl.LoadTexture("models/playerModel/torso/bodyTexture.png") // Load model texture
+	// rl.SetMaterialTexture(obj.Materials, rl.LocMapSpecular, texture)      // Set map diffuse texture
+	// log.Println(obj)
+	player.model = userModel{
+		hair, head, body, bottom,
+	}
 
 	var buttons []button
 	buttons = addButton(buttons, "play", play)
@@ -37,11 +50,18 @@ func Start() {
 	camera.SetTarget(rl.NewVector3(0.0, 0.0, 0.0))
 	camera.Update(dt)
 
+	menuCamera.Position = rl.NewVector3(0.0, 14.0, 16.0)
+	menuCamera.Target = rl.NewVector3(0.0, 0.0, 0.0)
+	menuCamera.Up = rl.NewVector3(0.0, 1.0, 0.0)
+	menuCamera.Fovy = 45.0
+	rl.SetCameraMode(menuCamera, rl.CameraOrbital)
+
 	for !rl.WindowShouldClose() {
 
 		switch player.state {
 		case "menu":
 			menu(buttons)
+
 		case "game":
 			game()
 		}

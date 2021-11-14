@@ -30,6 +30,7 @@ func serverCoords() {
 			err = json.Unmarshal(p[:n], &coords)
 			if err != nil {
 				log.Println("Json error", err, client)
+				return
 			}
 			go coordUpdate(coords, server, client)
 		}

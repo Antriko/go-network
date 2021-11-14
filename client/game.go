@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net"
 	"time"
 
@@ -94,9 +95,17 @@ func renderOthers() {
 func renderOtherTag() {
 	for key, value := range players {
 		if key != player.username {
-			cubeScreenPosition := rl.GetWorldToScreen(rl.NewVector3(value.X, value.Y, value.Z), camera.Camera)
+			cubeV3 := rl.NewVector3(value.X, value.Y, value.Z)
+			cubeScreenPosition := rl.GetWorldToScreen(cubeV3, camera.Camera)
 			header := value.Username
-			rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, 100) / 2)), int32(cubeScreenPosition.Y), 20, rl.Black)
+			difference := rl.Vector3Subtract(rl.NewVector3(player.pos.X, player.pos.Y, player.pos.Z), cubeV3).Z
+			if difference > 20 {
+				difference = 20
+			}
+			tagSize := int32(math.Abs(20 - float64(difference))) // neg to pos, pos to neg
+			log.Println(tagSize)
+
+			rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-40, tagSize, rl.Black)
 
 		}
 	}

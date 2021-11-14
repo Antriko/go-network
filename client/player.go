@@ -22,6 +22,14 @@ type playerInfo struct {
 	serverConn     *net.TCPConn
 	chatServerConn *net.TCPConn
 	//Texture       rl.Texture2D
+	model userModel
+}
+
+type userModel struct {
+	hair   rl.Model
+	head   rl.Model
+	body   rl.Model
+	bottom rl.Model
 }
 
 func initPlayer(username string) *playerInfo {
@@ -40,11 +48,14 @@ func initPlayer(username string) *playerInfo {
 	player.chatMessage = ""
 	// move, typing
 
+	// player.model = rl.LoadModel("models/castle.obj")
+
 	if player.username != "tmp" {
 		player.connChat()
 	}
 
 	return player
+
 }
 
 func (player *playerInfo) playerTyping() {
@@ -103,12 +114,18 @@ func (player *playerInfo) playerMovement() {
 
 func (player *playerInfo) renderPlayer() {
 	rl.DrawCubeWires(player.pos, player.size.X, player.size.Y, player.size.Z, rl.Black)
-	// rl.DrawModelWires(playerModel, rl.NewVector3(player.size.X, player.size.Y, player.size.Z), 1, rl.White)
+
+	rl.DrawModel(player.model.hair, player.pos, 5.0, rl.White)
+	rl.DrawModel(player.model.head, player.pos, 5.0, rl.White)
+	rl.DrawModel(player.model.body, player.pos, 5.0, rl.White)
+	rl.DrawModel(player.model.bottom, player.pos, 5.0, rl.White)
+
 }
 func (player *playerInfo) renderPlayerTag() {
 	cubeScreenPosition := rl.GetWorldToScreen(rl.NewVector3(player.pos.X, player.pos.Y, player.pos.Z), camera.Camera)
 	header := player.username
-	rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, 100) / 2)), int32(cubeScreenPosition.Y), 20, rl.Black)
+	tagSize := int32(20)
+	rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-40, tagSize, rl.Black)
 }
 
 func (player *playerInfo) connChat() {
