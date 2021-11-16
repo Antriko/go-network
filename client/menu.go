@@ -6,7 +6,38 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func menu(buttons []button) {
+type menuSettings struct {
+	camera rl.Camera
+
+	playerModel         userModel
+	playerPos           rl.Vector3
+	playerScale         rl.Vector3
+	playerRotationAxis  rl.Vector3
+	playerRotationAngle float32
+	playerTint          rl.Color
+}
+
+func initMenu() *menuSettings {
+	menu := &menuSettings{}
+	menu.camera = rl.Camera{}
+	menu.camera.Position = rl.NewVector3(0.0, 14.0, 16.0)
+	menu.camera.Target = rl.NewVector3(0.0, 0.0, 0.0)
+	menu.camera.Up = rl.NewVector3(0.0, 1.0, 0.0)
+	menu.camera.Fovy = 75.0
+	// rl.SetCameraMode(menu.camera, rl.CameraOrbital)
+
+	menu.playerPos = rl.NewVector3(0.0, -16.0, -10.0)
+	menu.playerScale = rl.NewVector3(5.0, 5.0, 5.0)
+	menu.playerRotationAxis = rl.NewVector3(0.0, 1.0, 0.0)
+	menu.playerRotationAngle = float32(0.0)
+	menu.playerTint = rl.White
+
+	menu.playerModel = userModel{}
+	return menu
+}
+
+func displayMenu(buttons []button) {
+	rl.UpdateCamera(&menu.camera) // camera.update(dt)
 	rl.BeginDrawing()
 
 	rl.ClearBackground(rl.RayWhite)
@@ -27,19 +58,18 @@ func menu(buttons []button) {
 		rl.DrawText(buttons[i].text, buttons[i].posX+buttons[i].offsetX, posY+25, buttons[i].height/2, rl.White)
 	}
 
-	rl.UpdateCamera(&menuCamera)
-	rl.BeginMode3D(menuCamera)
-	player.showPlayer()
+	rl.BeginMode3D(menu.camera)
+	menu.showPlayer()
 	rl.EndMode3D()
 }
 
-func (player *playerInfo) showPlayer() {
-
-	pos := rl.NewVector3(0.0, -5.0, -10.0)
-	rl.DrawGrid(10, 1.0)
-
-	rl.DrawModel(player.model.hair, pos, 5.0, rl.White)
-	rl.DrawModel(player.model.head, pos, 5.0, rl.White)
-	rl.DrawModel(player.model.body, pos, 5.0, rl.White)
-	rl.DrawModel(player.model.bottom, pos, 5.0, rl.White)
+func (menu *menuSettings) showPlayer() {
+	// rl.DrawGrid(10, 1.0)
+	menu.playerRotationAngle += 1.25
+	// log.Println(menu.playerPos, menu.playerRotationAxis, menu.playerRotationAngle, menu.playerScale)
+	rl.DrawModelEx(menu.playerModel.bottom, menu.playerPos, menu.playerRotationAxis, menu.playerRotationAngle, menu.playerScale, menu.playerTint)
+	rl.DrawModelEx(menu.playerModel.body, menu.playerPos, menu.playerRotationAxis, menu.playerRotationAngle, menu.playerScale, menu.playerTint)
+	rl.DrawModelEx(menu.playerModel.head, menu.playerPos, menu.playerRotationAxis, menu.playerRotationAngle, menu.playerScale, menu.playerTint)
+	rl.DrawModelEx(menu.playerModel.hair, menu.playerPos, menu.playerRotationAxis, menu.playerRotationAngle, menu.playerScale, menu.playerTint)
+	rl.DrawModelEx(menu.playerModel.accessory, menu.playerPos, menu.playerRotationAxis, menu.playerRotationAngle, menu.playerScale, menu.playerTint)
 }

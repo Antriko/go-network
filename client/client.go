@@ -3,20 +3,24 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
+	"path/filepath"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 // global
+var menu *menuSettings = initMenu()
 var player *playerInfo = initPlayer("tmp")
 var camera = NewCustomCamera(10.0, 3.0, 100.0)
-var menuCamera = rl.Camera{}
+var models = make(map[string]map[string]rl.Model)
 
 func Start() {
+	log.SetFlags(log.Lshortfile)
 	rand.Seed(time.Now().UnixNano())
 	username := fmt.Sprint(rand.Intn(10000))
 	player.username = username
@@ -24,22 +28,49 @@ func Start() {
 	screenWidth := int32(1280)
 	screenHeight := int32(720)
 	rl.InitWindow(screenWidth, screenHeight, "Multiplayer")
-	// playerModel := rl.LoadModel("client/models/playerModel/model.obj")
 
 	rl.SetTargetFPS(60)
 	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
 
-	// obj := rl.LoadModel("models/playerModel/model.obj") // Load OBJ model
-	hair := rl.LoadModel("models/default/hairDefault.glb")
-	head := rl.LoadModel("models/default/headDefault.glb")
-	body := rl.LoadModel("models/default/bodyDefault.glb")
-	bottom := rl.LoadModel("models/default/bottomDefault.glb")
+	// Model loading - Load all models (dynamically, reading each file dir) and save into a global model map with nested maps
+	// map["head"]map["default"] ect
+	modelFolder := "models"
+	files, _ := ioutil.ReadDir(modelFolder)
+	for _, f := range files {
+		innerFiles, _ := ioutil.ReadDir(modelFolder + "/" + f.Name())
+		models[f.Name()] = make(map[string]rl.Model)
+		for _, inner := range innerFiles {
+			path := modelFolder + "/" + f.Name() + "/" + inner.Name()
+			ext := filepath.Ext(path)
+			if ext == ".glb" {
+				log.Println(path)
+				// Load model dynamically
+				name := inner.Name()[:len(inner.Name())-len(ext)]
+				model := rl.LoadModel(path)
+				models[f.Name()][name] = model // trim .glb from file name
+			}
+		}
+	}
 
-	// texture := rl.LoadTexture("models/playerModel/torso/bodyTexture.png") // Load model texture
-	// rl.SetMaterialTexture(obj.Materials, rl.LocMapSpecular, texture)      // Set map diffuse texture
-	// log.Println(obj)
-	player.model = userModel{
-		hair, head, body, bottom,
+	for key := range models {
+		var keys []string
+		for mapKey := range models[key] {
+			keys = append(keys, mapKey)
+		}
+		log.Println(keys)
+		randomSelection := keys[rand.Intn(len(keys))]
+		switch key {
+		case "accessory":
+			menu.playerModel.accessory = models[key][randomSelection]
+		case "hair":
+			menu.playerModel.hair = models[key][randomSelection]
+		case "head":
+			menu.playerModel.head = models[key][randomSelection]
+		case "body":
+			menu.playerModel.body = models[key][randomSelection]
+		case "bottom":
+			menu.playerModel.bottom = models[key][randomSelection]
+		}
 	}
 
 	var buttons []button
@@ -50,17 +81,12 @@ func Start() {
 	camera.SetTarget(rl.NewVector3(0.0, 0.0, 0.0))
 	camera.Update(dt)
 
-	menuCamera.Position = rl.NewVector3(0.0, 14.0, 16.0)
-	menuCamera.Target = rl.NewVector3(0.0, 0.0, 0.0)
-	menuCamera.Up = rl.NewVector3(0.0, 1.0, 0.0)
-	menuCamera.Fovy = 45.0
-	rl.SetCameraMode(menuCamera, rl.CameraOrbital)
-
+	rl.SetCameraMode(menu.camera, rl.CameraFree)
 	for !rl.WindowShouldClose() {
 
 		switch player.state {
 		case "menu":
-			menu(buttons)
+			displayMenu(buttons)
 
 		case "game":
 			game()

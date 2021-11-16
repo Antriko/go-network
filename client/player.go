@@ -26,10 +26,11 @@ type playerInfo struct {
 }
 
 type userModel struct {
-	hair   rl.Model
-	head   rl.Model
-	body   rl.Model
-	bottom rl.Model
+	accessory rl.Model
+	hair      rl.Model
+	head      rl.Model
+	body      rl.Model
+	bottom    rl.Model
 }
 
 func initPlayer(username string) *playerInfo {
