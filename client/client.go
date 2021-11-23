@@ -7,7 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	"path/filepath"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -35,47 +34,30 @@ func Start() {
 	player.username = username
 	// Model loading - Load all models (dynamically, reading each file dir) and save into a global model map with nested maps
 	// map["head"]map["default"] ect
-	modelFolder := "models"
+
+	var jsonModel map[string]map[string]modelJson
+	b, _ := ioutil.ReadFile("models/models.json")
+	_ = json.Unmarshal(b, &jsonModel)
 	arrayOfModels = make(map[string][]modelEntity)
-	files, _ := ioutil.ReadDir(modelFolder)
-	for _, f := range files {
-		innerFiles, _ := ioutil.ReadDir(modelFolder + "/" + f.Name())
-		models[f.Name()] = make(map[string]modelEntity)
-		// -- Make first in list
-		switch f.Name() {
-		case "hair":
-			bald := modelEntity{
-				"bald",
-				"hair",
-				rl.Model{},
+	for key, value := range jsonModel {
+		log.Println(key, value)
+		models[key] = make(map[string]modelEntity)
+		for key2, value2 := range value {
+			log.Println(value2)
+			var model rl.Model
+			if value2.File == "" { // For no hair and accessory
+				model = rl.Model{}
+			} else {
+				model = rl.LoadModel(value2.File)
 			}
-			models["hair"]["bald"] = bald
-			arrayOfModels["hair"] = append(arrayOfModels["hair"], bald)
-		case "accessory":
-			nothing := modelEntity{
-				"nothing",
-				"accessory",
-				rl.Model{},
+			modelEnt := modelEntity{
+				value2.Name,
+				key2,
+				model,
 			}
-			models["accessory"]["nothing"] = nothing
-			arrayOfModels["accessory"] = append(arrayOfModels["nothing"], nothing)
-		}
-		//
-		for _, inner := range innerFiles {
-			path := modelFolder + "/" + f.Name() + "/" + inner.Name()
-			ext := filepath.Ext(path)
-			if ext == ".glb" {
-				// Load model dynamically
-				name := inner.Name()[:len(inner.Name())-len(ext)] // trim .glb from file name
-				model := rl.LoadModel(path)
-				modelEnt := modelEntity{
-					name, // TODO Change from camelCasing to a regular word
-					f.Name(),
-					model,
-				}
-				arrayOfModels[f.Name()] = append(arrayOfModels[f.Name()], modelEnt)
-				models[f.Name()][name] = modelEnt
-			}
+			arrayOfModels[key] = append(arrayOfModels[key], modelEnt)
+			log.Println(key, key2)
+			models[key][key2] = modelEnt
 		}
 	}
 
@@ -94,7 +76,7 @@ func Start() {
 			game()
 		}
 
-		debugging()
+		// debugging()
 
 		rl.EndDrawing()
 	}
@@ -161,6 +143,11 @@ type userInfo struct {
 	Info     string
 	Username string
 	Time     time.Time
+}
+
+type modelJson struct {
+	Name string
+	File string
 }
 
 func debugging() {

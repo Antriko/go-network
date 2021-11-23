@@ -3,6 +3,7 @@
 package client
 
 import (
+	"math"
 	"math/rand"
 	"strings"
 
@@ -44,7 +45,7 @@ func initMenu() *menuSettings {
 	menu.playerTint = rl.White
 
 	menu.playerModel = userModel{}
-	menu.rotation = 0.0
+	menu.rotation = 4.0
 
 	menu.menus = make(map[string]menuButtons)
 	menu.chosenModel = make(map[string]int)
@@ -56,12 +57,15 @@ func initMenu() *menuSettings {
 
 	menu.initMenuButtons()
 
-	// raygui.LoadGuiStyle("client/menuStyle/solarized.style") // Hover not working?
-	raygui.SetStyleProperty(raygui.GlobalTextFontsize, 30)
 	return menu
 }
 
 func (menu *menuSettings) displayMenu(menuName string) {
+	posY := float32(rl.GetScreenHeight()) * 0.05                        // 1/20th of the top
+	width := float32(rl.GetScreenWidth()) * 0.2                         // 1/5th of screen width
+	height := float32(math.Round(float64(rl.GetScreenWidth()) * 0.025)) // yeah.
+	labelTextSize := height / 2
+	raygui.SetStyleProperty(raygui.GlobalTextFontsize, int64(height)) // dynamically set font size depending on screen height
 	var getMenu menuButtons
 	for key, value := range menu.menus {
 		if key == menuName {
@@ -72,11 +76,10 @@ func (menu *menuSettings) displayMenu(menuName string) {
 	menu.camera.Update(dt)
 	rl.BeginDrawing()
 
-	posY := float32(50.0)
 	for _, value := range getMenu.buttons {
-		posX := float32(rl.GetScreenWidth()/4) - float32(value.width/2) // center on first 1/4th
-		label := rl.NewRectangle(posX-float32(value.width), posY, float32(value.width), float32(value.height))
-		rect := rl.NewRectangle(posX, posY, float32(value.width), float32(value.height))
+		posX := float32(rl.GetScreenWidth()/4) - float32(width/2) // center on first 1/4th
+
+		rect := rl.NewRectangle(posX, posY, width, height)
 		switch value.typeOf {
 		case "button":
 			buttonClicked := raygui.Button(rect, value.text)
@@ -91,15 +94,16 @@ func (menu *menuSettings) displayMenu(menuName string) {
 				}
 			}
 			old := menu.chosenModel[strings.ToLower(value.text)]
-			raygui.Label(label, value.text)
 			menu.chosenModel[strings.ToLower(value.text)] = raygui.Spinner(rect, menu.chosenModel[strings.ToLower(value.text)], 0, len(arr)-1)
-
-			raygui.Label(rl.NewRectangle(posX+float32(value.width), posY, float32(value.width), float32(value.height)), arr[menu.chosenModel[strings.ToLower(value.text)]].name)
 			if old != menu.chosenModel[strings.ToLower(value.text)] {
 				value.function()
 			}
+			// Labels
+			// raygui.Label won't allow for font size change.
+			rl.DrawText(value.text, int32(posX-float32(rl.MeasureText(value.text, int32(labelTextSize))))-int32(labelTextSize), int32(posY), int32(labelTextSize), rl.Black)
+			rl.DrawText(arr[menu.chosenModel[strings.ToLower(value.text)]].name, int32(posX+width)+int32(labelTextSize), int32(posY), int32(labelTextSize), rl.Black)
 		}
-		posY += float32(value.height) * 1.5
+		posY += height * 1.5
 	}
 
 	rl.ClearBackground(rl.RayWhite)
@@ -131,7 +135,7 @@ func addButton(buttons []button, typeOf string, text string, function func()) []
 	btn.text = text
 	btn.function = function
 	btn.isHover = false
-	btn.height = 50
+	btn.height = 100
 	btn.width = rl.MeasureText(text, btn.height/2) + (100 * 2)
 	btn.posX = int32(rl.GetScreenWidth()/2) - btn.width
 
