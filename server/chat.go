@@ -32,7 +32,6 @@ func serverChat() {
 				n, err := conn.Read(p)
 				chatConnInit(conn, p, n)
 				if err != nil {
-					log.Println("TCP data err", err)
 					return
 				}
 

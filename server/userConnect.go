@@ -53,7 +53,7 @@ func findUserInfo(conn *net.TCPConn, p []byte, n int) userConnInfo {
 	if value, ok := userConnectionsMap[conn]; ok {
 		return value
 	} else {
-		log.Println("Adding new user")
+		log.Print("Adding new user")
 		// No user
 		userConnected := userConnInfo{
 			conn,

@@ -17,76 +17,78 @@ import (
 var menu *menuSettings = initMenu()
 var player *playerInfo = initPlayer("tmp")
 var camera = NewCustomCamera(10.0, 3.0, 100.0)
-var models = make(map[string]map[string]rl.Model)
+var models = make(map[string]map[string]modelEntity)
+var arrayOfModels = make(map[string][]modelEntity)
+
+// TODO move camera to game/player struct instead of global
 
 func Start() {
 	log.SetFlags(log.Lshortfile)
 	rand.Seed(time.Now().UnixNano())
-	username := fmt.Sprint(rand.Intn(10000))
-	player.username = username
-
-	screenWidth := int32(1280)
-	screenHeight := int32(720)
-	rl.InitWindow(screenWidth, screenHeight, "Multiplayer")
-
+	rl.SetTraceLog(rl.LogError)
+	rl.SetConfigFlags(rl.FlagWindowResizable)
+	rl.InitWindow(1280, 720, "Chatroom")
 	rl.SetTargetFPS(60)
 	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
 
+	username := fmt.Sprint(rand.Intn(10000))
+	player.username = username
 	// Model loading - Load all models (dynamically, reading each file dir) and save into a global model map with nested maps
 	// map["head"]map["default"] ect
 	modelFolder := "models"
+	arrayOfModels = make(map[string][]modelEntity)
 	files, _ := ioutil.ReadDir(modelFolder)
 	for _, f := range files {
 		innerFiles, _ := ioutil.ReadDir(modelFolder + "/" + f.Name())
-		models[f.Name()] = make(map[string]rl.Model)
+		models[f.Name()] = make(map[string]modelEntity)
+		// -- Make first in list
+		switch f.Name() {
+		case "hair":
+			bald := modelEntity{
+				"bald",
+				"hair",
+				rl.Model{},
+			}
+			models["hair"]["bald"] = bald
+			arrayOfModels["hair"] = append(arrayOfModels["hair"], bald)
+		case "accessory":
+			nothing := modelEntity{
+				"nothing",
+				"accessory",
+				rl.Model{},
+			}
+			models["accessory"]["nothing"] = nothing
+			arrayOfModels["accessory"] = append(arrayOfModels["nothing"], nothing)
+		}
+		//
 		for _, inner := range innerFiles {
 			path := modelFolder + "/" + f.Name() + "/" + inner.Name()
 			ext := filepath.Ext(path)
 			if ext == ".glb" {
-				log.Println(path)
 				// Load model dynamically
-				name := inner.Name()[:len(inner.Name())-len(ext)]
+				name := inner.Name()[:len(inner.Name())-len(ext)] // trim .glb from file name
 				model := rl.LoadModel(path)
-				models[f.Name()][name] = model // trim .glb from file name
+				modelEnt := modelEntity{
+					name, // TODO Change from camelCasing to a regular word
+					f.Name(),
+					model,
+				}
+				arrayOfModels[f.Name()] = append(arrayOfModels[f.Name()], modelEnt)
+				models[f.Name()][name] = modelEnt
 			}
 		}
 	}
 
-	for key := range models {
-		var keys []string
-		for mapKey := range models[key] {
-			keys = append(keys, mapKey)
-		}
-		log.Println(keys)
-		randomSelection := keys[rand.Intn(len(keys))]
-		switch key {
-		case "accessory":
-			menu.playerModel.accessory = models[key][randomSelection]
-		case "hair":
-			menu.playerModel.hair = models[key][randomSelection]
-		case "head":
-			menu.playerModel.head = models[key][randomSelection]
-		case "body":
-			menu.playerModel.body = models[key][randomSelection]
-		case "bottom":
-			menu.playerModel.bottom = models[key][randomSelection]
-		}
-	}
+	// Random selection of clothing
+	menu.selectRandomModels()
 
-	var buttons []button
-	buttons = addButton(buttons, "play", play)
-
-	rl.SetCameraMode(camera.Camera, rl.CameraCustom) // Set a first person misc.CustomCamera mode
-	dt := rl.GetFrameTime()                          // delta time
-	camera.SetTarget(rl.NewVector3(0.0, 0.0, 0.0))
-	camera.Update(dt)
-
-	rl.SetCameraMode(menu.camera, rl.CameraFree)
 	for !rl.WindowShouldClose() {
 
 		switch player.state {
 		case "menu":
-			displayMenu(buttons)
+			menu.displayMenu("main")
+		case "customise":
+			menu.displayMenu("customise")
 
 		case "game":
 			game()
@@ -98,32 +100,6 @@ func Start() {
 	}
 
 	rl.CloseWindow()
-}
-
-type button struct {
-	text     string
-	function func()
-	isHover  bool
-	posX     int32
-	offsetX  int32
-	width    int32
-	height   int32
-}
-
-func addButton(buttons []button, text string, function func()) []button {
-	// TODO dynamic button width or text center?
-	btn := button{}
-	btn.text = text
-	btn.function = function
-	btn.isHover = false
-	btn.height = 100
-	btn.offsetX = 100
-	btn.width = rl.MeasureText(text, btn.height/2) + (btn.offsetX * 2)
-	btn.posX = int32(rl.GetScreenWidth()/2) - btn.width
-
-	buttons = append(buttons, btn)
-
-	return buttons
 }
 
 func play() {
@@ -179,30 +155,6 @@ func (player *playerInfo) connectUser() {
 
 		}
 	}()
-
-	// p := make([]byte, 1024)
-	// conn, err := net.Dial("udp", "localhost:8079")
-	// if err != nil {
-	// 	log.Printf("Some error %v", err)
-	// 	return
-	// }
-	// jsonData, err := json.Marshal(userInfo{player.username})
-
-	// if err != nil {
-	// 	log.Printf("Some error %v", err)
-	// 	return
-	// }
-
-	// fmt.Fprintf(conn, "%s", jsonData) // strings vulnerability or something
-	// _, err = bufio.NewReader(conn).Read(p)
-	// // TODO
-	// // Wait for server response (user exists, user continue?) and then go into game
-	// if err == nil {
-	// 	fmt.Printf("%s\n", p)
-	// } else {
-	// 	fmt.Printf("Some error %v\n", err)
-	// }
-	// //conn.Close()
 }
 
 type userInfo struct {
@@ -224,5 +176,5 @@ func debugging() {
 	rl.DrawText(fmt.Sprintf("playerState: %v", player.state), 20, int32(incrY()), 20, rl.Black)
 	rl.DrawText(fmt.Sprintf("gameState: %v", player.gameStatus), 20, int32(incrY()), 20, rl.Black)
 	rl.DrawText(fmt.Sprintf("playerPos: %v", player.pos), 20, int32(incrY()), 20, rl.Black)
-	rl.DrawText(fmt.Sprintf("chatMessage: %v", player.chatMessage), 20, int32(incrY()), 20, rl.Black)
+	rl.DrawText(fmt.Sprintf("rotation: %v", menu.rotation), 20, int32(incrY()), 20, rl.Black)
 }

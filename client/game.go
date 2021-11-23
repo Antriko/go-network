@@ -99,13 +99,15 @@ func renderOtherTag() {
 			cubeScreenPosition := rl.GetWorldToScreen(cubeV3, camera.Camera)
 			header := value.Username
 			difference := rl.Vector3Subtract(rl.NewVector3(player.pos.X, player.pos.Y, player.pos.Z), cubeV3).Z
-			if difference > 20 {
-				difference = 20
+			if difference < 30 { // Don't load if too far
+				tmpDiff := difference
+				if difference > 20 {
+					tmpDiff = 20
+				}
+				tagSize := int32(math.Abs(20 - float64(tmpDiff))) // neg to pos, pos to neg
+				log.Println(tagSize, difference)
+				rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-40, tagSize, rl.Black)
 			}
-			tagSize := int32(math.Abs(20 - float64(difference))) // neg to pos, pos to neg
-			log.Println(tagSize)
-
-			rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-40, tagSize, rl.Black)
 
 		}
 	}

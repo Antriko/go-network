@@ -26,11 +26,16 @@ type playerInfo struct {
 }
 
 type userModel struct {
-	accessory rl.Model
-	hair      rl.Model
-	head      rl.Model
-	body      rl.Model
-	bottom    rl.Model
+	accessory modelEntity
+	hair      modelEntity
+	head      modelEntity
+	body      modelEntity
+	bottom    modelEntity
+}
+type modelEntity struct {
+	name     string
+	category string
+	model    rl.Model
 }
 
 func initPlayer(username string) *playerInfo {
@@ -116,10 +121,10 @@ func (player *playerInfo) playerMovement() {
 func (player *playerInfo) renderPlayer() {
 	rl.DrawCubeWires(player.pos, player.size.X, player.size.Y, player.size.Z, rl.Black)
 
-	rl.DrawModel(player.model.hair, player.pos, 5.0, rl.White)
-	rl.DrawModel(player.model.head, player.pos, 5.0, rl.White)
-	rl.DrawModel(player.model.body, player.pos, 5.0, rl.White)
-	rl.DrawModel(player.model.bottom, player.pos, 5.0, rl.White)
+	rl.DrawModel(player.model.hair.model, player.pos, 5.0, rl.White)
+	rl.DrawModel(player.model.head.model, player.pos, 5.0, rl.White)
+	rl.DrawModel(player.model.body.model, player.pos, 5.0, rl.White)
+	rl.DrawModel(player.model.bottom.model, player.pos, 5.0, rl.White)
 
 }
 func (player *playerInfo) renderPlayerTag() {
