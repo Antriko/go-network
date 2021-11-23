@@ -79,8 +79,8 @@ func Start() {
 		}
 	}
 
-	// Random selection of clothing
-	menu.selectRandomModels()
+	// Default to 0 0 0 0 0
+	menu.changeModel()
 
 	for !rl.WindowShouldClose() {
 

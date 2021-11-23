@@ -57,7 +57,7 @@ func initMenu() *menuSettings {
 	menu.initMenuButtons()
 
 	// raygui.LoadGuiStyle("client/menuStyle/solarized.style") // Hover not working?
-	raygui.SetStyleProperty(raygui.GlobalTextFontsize, 35)
+	raygui.SetStyleProperty(raygui.GlobalTextFontsize, 30)
 	return menu
 }
 
@@ -72,13 +72,13 @@ func (menu *menuSettings) displayMenu(menuName string) {
 	menu.camera.Update(dt)
 	rl.BeginDrawing()
 
-	posY := float32(100.0)
+	posY := float32(50.0)
 	for _, value := range getMenu.buttons {
 		posX := float32(rl.GetScreenWidth()/4) - float32(value.width/2) // center on first 1/4th
 		label := rl.NewRectangle(posX-float32(value.width), posY, float32(value.width), float32(value.height))
 		rect := rl.NewRectangle(posX, posY, float32(value.width), float32(value.height))
 		switch value.typeOf {
-		case "click":
+		case "button":
 			buttonClicked := raygui.Button(rect, value.text)
 			if buttonClicked {
 				value.function()
@@ -99,7 +99,7 @@ func (menu *menuSettings) displayMenu(menuName string) {
 				value.function()
 			}
 		}
-		posY += 120
+		posY += float32(value.height) * 1.5
 	}
 
 	rl.ClearBackground(rl.RayWhite)
@@ -120,7 +120,6 @@ type button struct {
 	function func()
 	isHover  bool
 	posX     int32
-	offsetX  int32
 	width    int32
 	height   int32
 }
@@ -132,9 +131,8 @@ func addButton(buttons []button, typeOf string, text string, function func()) []
 	btn.text = text
 	btn.function = function
 	btn.isHover = false
-	btn.height = 100
-	btn.offsetX = 100
-	btn.width = rl.MeasureText(text, btn.height/2) + (btn.offsetX * 2)
+	btn.height = 50
+	btn.width = rl.MeasureText(text, btn.height/2) + (100 * 2)
 	btn.posX = int32(rl.GetScreenWidth()/2) - btn.width
 
 	buttons = append(buttons, btn)
@@ -145,9 +143,9 @@ func addButton(buttons []button, typeOf string, text string, function func()) []
 func (menu *menuSettings) initMenuButtons() {
 	// Main menu buttons ------
 	var buttons []button
-	buttons = addButton(buttons, "click", "play", play)
-	buttons = addButton(buttons, "click", "random", menu.selectRandomModels)
-	buttons = addButton(buttons, "click", "customise", customise)
+	buttons = addButton(buttons, "button", "play", play)
+	buttons = addButton(buttons, "button", "random", menu.selectRandomModels)
+	buttons = addButton(buttons, "button", "customise", customise)
 	menu.menus["main"] = menuButtons{
 		buttons,
 		"main",
@@ -169,12 +167,18 @@ func (menu *menuSettings) initMenuButtons() {
 	buttons = addButton(buttons, "spinner", "Head", menu.changeModel)
 	buttons = addButton(buttons, "spinner", "Body", menu.changeModel)
 	buttons = addButton(buttons, "spinner", "Bottom", menu.changeModel)
+	buttons = addButton(buttons, "button", "Random", menu.selectRandomModels)
+	buttons = addButton(buttons, "button", "Save", backToMainMenu)
 	// log.Println(buttons)
 	menu.menus["customise"] = menuButtons{
 		buttons,
 		"customise",
 		true,
 	}
+}
+
+func backToMainMenu() {
+	player.state = "menu"
 }
 
 func (menu *menuSettings) showPlayer() {
@@ -227,23 +231,29 @@ func (menu *menuSettings) controls() {
 }
 
 func (menu *menuSettings) selectRandomModels() {
-	for key := range models {
+	for key, value := range arrayOfModels {
 		var keys []string
 		for mapKey := range models[key] {
 			keys = append(keys, mapKey)
 		}
-		randomSelection := keys[rand.Intn(len(keys))]
+		randNum := rand.Intn(len(keys))
+		randomSelection := value[randNum]
 		switch key {
 		case "accessory":
-			menu.playerModel.accessory = models[key][randomSelection]
+			menu.playerModel.accessory = randomSelection
+			menu.chosenModel["accessory"] = randNum
 		case "hair":
-			menu.playerModel.hair = models[key][randomSelection]
+			menu.playerModel.hair = randomSelection
+			menu.chosenModel["hair"] = randNum
 		case "head":
-			menu.playerModel.head = models[key][randomSelection]
+			menu.playerModel.head = randomSelection
+			menu.chosenModel["head"] = randNum
 		case "body":
-			menu.playerModel.body = models[key][randomSelection]
+			menu.playerModel.body = randomSelection
+			menu.chosenModel["body"] = randNum
 		case "bottom":
-			menu.playerModel.bottom = models[key][randomSelection]
+			menu.playerModel.bottom = randomSelection
+			menu.chosenModel["bottom"] = randNum
 		}
 	}
 }
