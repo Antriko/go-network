@@ -11,9 +11,6 @@
     },{
         "name": "Propeller Hat",
         "file": "models/accessory/eyePatch.glb"
-    },{
-        "name": "Eye patch",
-        "file": "models/accessory/eyePatch.glb"
     }],
 
     "hair": [{
