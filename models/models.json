@@ -1,64 +1,50 @@
 {
-    "accessory": {
-        "nothing": {
-            "name": "Nothing",
-            "file": ""
-        },
-        "eyepatch": {
-            "name": "Eye patch",
-            "file": "models/accessory/eyePatch.glb"
-        },
-        "glasses": {
-            "name": "Glasses",
-            "file": "models/accessory/glasses.glb"
-        },
-        "propellerHat": {
-            "name": "Propeller Hat",
-            "file": "models/accessory/eyePatch.glb"
-        }
-    },
+    "accessory": [{
+        "name": "Nothing",
+        "file": ""
+    },{
+        "name": "Eye patch",
+        "file": "models/accessory/eyePatch.glb"
+    },{
+        "name": "Glasses",
+        "file": "models/accessory/glasses.glb"
+    },{
+        "name": "Propeller Hat",
+        "file": "models/accessory/eyePatch.glb"
+    },{
+        "name": "Eye patch",
+        "file": "models/accessory/eyePatch.glb"
+    }],
 
-    "hair": {
-        "bald": {
-            "name": "Bald",
-            "file": ""
-        },
-        "causal": {
-            "name": "Casual",
-            "file": "models/hair/casual.glb"
-        }
-    },
+    "hair": [{
+        "name": "Bald",
+        "file": ""
+    },{
+        "name": "Casual",
+        "file": "models/hair/casual.glb"
+    }],
 
-    "head": {
-        "naked": {
-            "name": "Naked",
-            "file": "models/head/naked.glb"
-        },
-        "beard": {
-            "name": "Beard",
-            "file": "models/head/beard.glb"
-        }
-    },
+    "head": [{
+        "name": "Naked",
+        "file": "models/head/naked.glb"
+    },{
+        "name": "Beard",
+        "file": "models/head/beard.glb"
+    }],
 
-    "body": {
-        "naked": {
-            "name": "Naked",
-            "file": "models/body/naked.glb"
-        },
-        "winterJumper": {
-            "name": "Winter Jumper",
-            "file": "models/body/winterJumper.glb"
-        }
-    },
+    "body": [{
+        "name": "Naked",
+        "file": "models/body/naked.glb"
+    },{
+        "name": "Winter Jumper",
+        "file": "models/body/winterJumper.glb"
+    }],
 
-    "bottom": {
-        "naked": {
-            "name": "Naked",
-            "file": "models/bottom/naked.glb"
-        },
-        "blackJeans": {
-            "name": "Black Jeans",
-            "file": "models/bottom/blackJeans.glb"
-        }
-    }
+    "bottom": [{
+        "name": "Naked",
+        "file": "models/bottom/naked.glb"
+    },{
+        "name": "Black Jeans",
+        "file": "models/bottom/blackJeans.glb"
+    }]
 }

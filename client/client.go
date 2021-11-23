@@ -32,19 +32,20 @@ func Start() {
 
 	username := fmt.Sprint(rand.Intn(10000))
 	player.username = username
+
 	// Model loading - Load all models (dynamically, reading each file dir) and save into a global model map with nested maps
 	// map["head"]map["default"] ect
-
-	var jsonModel map[string]map[string]modelJson
+	var jsonModel map[string][]modelJson
 	b, _ := ioutil.ReadFile("models/models.json")
 	_ = json.Unmarshal(b, &jsonModel)
 	arrayOfModels = make(map[string][]modelEntity)
+	log.Println(jsonModel)
 	for key, value := range jsonModel {
-		log.Println(key, value)
 		models[key] = make(map[string]modelEntity)
+		log.Println(key, value)
 		for key2, value2 := range value {
-			log.Println(value2)
 			var model rl.Model
+			log.Println(key, key2, value2)
 			if value2.File == "" { // For no hair and accessory
 				model = rl.Model{}
 			} else {
@@ -52,12 +53,11 @@ func Start() {
 			}
 			modelEnt := modelEntity{
 				value2.Name,
-				key2,
+				key,
 				model,
 			}
 			arrayOfModels[key] = append(arrayOfModels[key], modelEnt)
-			log.Println(key, key2)
-			models[key][key2] = modelEnt
+			models[key][value2.Name] = modelEnt
 		}
 	}
 
