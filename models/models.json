@@ -10,7 +10,7 @@
         "file": "models/accessory/glasses.glb"
     },{
         "name": "Propeller Hat",
-        "file": "models/accessory/eyePatch.glb"
+        "file": "models/accessory/propellerHat.glb"
     }],
 
     "hair": [{
