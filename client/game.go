@@ -84,7 +84,13 @@ type coords struct {
 	LastActivity time.Time
 }
 
+type otherPlayer struct {
+	username    string
+	chosenModel chosenModel
+}
+
 func renderOthers() {
+	log.Println(users)
 	for key, value := range players {
 		if key != player.username {
 			playerPos := rl.NewVector3(value.X, value.Y, value.Z)
@@ -105,7 +111,6 @@ func renderOtherTag() {
 					tmpDiff = 20
 				}
 				tagSize := int32(math.Abs(20 - float64(tmpDiff))) // neg to pos, pos to neg
-				log.Println(tagSize, difference)
 				rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-40, tagSize, rl.Black)
 			}
 

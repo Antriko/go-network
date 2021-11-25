@@ -18,6 +18,7 @@ var player *playerInfo = initPlayer("tmp")
 var camera = NewCustomCamera(10.0, 3.0, 100.0)
 var models = make(map[string]map[string]modelEntity)
 var arrayOfModels = make(map[string][]modelEntity)
+var users = make(map[string]otherPlayer)
 
 // TODO move camera to game/player struct instead of global
 
@@ -39,13 +40,10 @@ func Start() {
 	b, _ := ioutil.ReadFile("models/models.json")
 	_ = json.Unmarshal(b, &jsonModel)
 	arrayOfModels = make(map[string][]modelEntity)
-	log.Println(jsonModel)
 	for key, value := range jsonModel {
 		models[key] = make(map[string]modelEntity)
-		log.Println(key, value)
-		for key2, value2 := range value {
+		for _, value2 := range value {
 			var model rl.Model
-			log.Println(key, key2, value2)
 			if value2.File == "" { // For no hair and accessory
 				model = rl.Model{}
 			} else {
@@ -92,7 +90,6 @@ func play() {
 
 }
 func (player *playerInfo) connectUser() {
-
 	addr := net.TCPAddr{
 		Port: 8079,
 		IP:   net.ParseIP("localhost"),
@@ -102,11 +99,14 @@ func (player *playerInfo) connectUser() {
 		log.Println("Chat server error", err)
 	}
 	player.serverConn = conn
-	jsonData, err := json.Marshal(userInfo{
+	usr := userInfo{
 		"connect",
 		player.username,
 		time.Now(),
-	})
+		player.chosenModel,
+	}
+	jsonData, err := json.Marshal(usr)
+	log.Println(usr)
 	if err != nil {
 		log.Printf("JSON data err %v", err)
 		return
@@ -120,13 +120,20 @@ func (player *playerInfo) connectUser() {
 			n, err := player.serverConn.Read(p)
 			if err != nil {
 				log.Println("TCP data err", err)
+				return
 			}
 			log.Printf("%s: %s", conn.RemoteAddr().String(), string(p[:n]))
 			// add/remove users
 
 			var userInfo userInfo
-			err = json.Unmarshal(p[:n], &userInfo)
+			_ = json.Unmarshal(p[:n], &userInfo)
 			log.Println(userInfo)
+			switch userInfo.Info {
+			case "connect":
+				users[userInfo.Username] = otherPlayer{userInfo.Username, userInfo.ChosenModel}
+			case "disconnect":
+				delete(users, userInfo.Username)
+			}
 			// User connected/disconnected info
 			chatHistory = append(chatHistory, ChatMessage{
 				"message",
@@ -134,15 +141,15 @@ func (player *playerInfo) connectUser() {
 				"User " + userInfo.Username + " has " + userInfo.Info + ".",
 				userInfo.Time,
 			})
-
 		}
 	}()
 }
 
 type userInfo struct {
-	Info     string
-	Username string
-	Time     time.Time
+	Info        string
+	Username    string
+	Time        time.Time
+	ChosenModel chosenModel
 }
 
 type modelJson struct {

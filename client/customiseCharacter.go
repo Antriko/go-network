@@ -5,9 +5,10 @@ func customise() {
 }
 
 func (menu *menuSettings) changeModel() {
-	menu.playerModel.accessory.model = arrayOfModels["accessory"][menu.chosenModel["accessory"]].model
-	menu.playerModel.hair.model = arrayOfModels["hair"][menu.chosenModel["hair"]].model
-	menu.playerModel.head.model = arrayOfModels["head"][menu.chosenModel["head"]].model
-	menu.playerModel.body.model = arrayOfModels["body"][menu.chosenModel["body"]].model
-	menu.playerModel.bottom.model = arrayOfModels["bottom"][menu.chosenModel["bottom"]].model
+	player.model.accessory = arrayOfModels["accessory"][player.chosenModel.Accessory]
+	player.model.hair = arrayOfModels["hair"][player.chosenModel.Hair]
+	player.model.head = arrayOfModels["head"][player.chosenModel.Head]
+	player.model.body = arrayOfModels["body"][player.chosenModel.Body]
+	player.model.bottom = arrayOfModels["bottom"][player.chosenModel.Bottom]
+
 }

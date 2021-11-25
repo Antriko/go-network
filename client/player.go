@@ -22,7 +22,8 @@ type playerInfo struct {
 	serverConn     *net.TCPConn
 	chatServerConn *net.TCPConn
 	//Texture       rl.Texture2D
-	model userModel
+	model       userModel
+	chosenModel chosenModel
 }
 
 type userModel struct {
@@ -55,6 +56,7 @@ func initPlayer(username string) *playerInfo {
 	// move, typing
 
 	// player.model = rl.LoadModel("models/castle.obj")
+	player.chosenModel = chosenModel{0, 0, 0, 0, 0}
 
 	if player.username != "tmp" {
 		player.connChat()
@@ -190,4 +192,12 @@ type ChatMessage struct {
 	Username string
 	Message  string
 	Time     time.Time
+}
+
+type chosenModel struct {
+	Accessory int
+	Hair      int
+	Head      int
+	Body      int
+	Bottom    int
 }

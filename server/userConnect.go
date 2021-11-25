@@ -30,6 +30,7 @@ func serverUserConnect() {
 		go func() {
 			for {
 				n, err := conn.Read(p)
+				log.Println(string(p[:n]))
 				usr := findUserInfo(conn, p, n)
 				if err != nil {
 					conn.Close()
@@ -70,6 +71,7 @@ func userDisconnected(conn *net.TCPConn) {
 		"disconnect",
 		userConnectionsMap[conn].Username,
 		time.Now(),
+		chosenModel{0, 0, 0, 0, 0},
 	})
 
 	delete(userCoordsMap, userConnectionsMap[conn].Username)
@@ -77,7 +79,6 @@ func userDisconnected(conn *net.TCPConn) {
 		if value.Username == userConnectionsMap[conn].Username {
 			delete(chatConnectionsMap, key)
 		}
-
 	}
 	delete(userConnectionsMap, conn)
 	for _, value := range userConnectionsMap { // key, value
@@ -86,9 +87,17 @@ func userDisconnected(conn *net.TCPConn) {
 }
 
 type userInfo struct { // TODO Maybe add user customisation ?? Clothing
-	Info     string
-	Username string
-	Time     time.Time
+	Info        string
+	Username    string
+	Time        time.Time
+	ChosenModel chosenModel
+}
+type chosenModel struct {
+	Accessory int
+	Hair      int
+	Head      int
+	Body      int
+	Bottom    int
 }
 
 type userConnInfo struct {

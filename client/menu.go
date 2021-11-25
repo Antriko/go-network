@@ -14,7 +14,6 @@ import (
 type menuSettings struct {
 	camera *CustomCamera
 
-	playerModel userModel
 	playerPos   rl.Vector3
 	playerScale float32
 	playerTint  rl.Color
@@ -23,8 +22,7 @@ type menuSettings struct {
 
 	cameraMove cameraMove
 
-	menus       map[string]menuButtons
-	chosenModel map[string]int
+	menus map[string]menuButtons
 }
 
 type menuButtons struct {
@@ -37,23 +35,16 @@ func initMenu() *menuSettings {
 	menu := &menuSettings{}
 	menu.camera = NewCustomCamera(10.0, 128.0, 8.0)
 	menu.camera.SetTarget(rl.NewVector3(0.0, 3.0, 0.0))
-	menu.camera.Angle = rl.NewVector2(-0.0, -0.4)
+	menu.camera.Angle = rl.NewVector2(0.0, -0.4)
 
 	menu.playerPos = rl.NewVector3(8.0, -4.0, 0.0)
 	scale := float32(6.0)
 	menu.playerScale = scale
 	menu.playerTint = rl.White
 
-	menu.playerModel = userModel{}
 	menu.rotation = 4.0
 
 	menu.menus = make(map[string]menuButtons)
-	menu.chosenModel = make(map[string]int)
-	menu.chosenModel["accessory"] = 0
-	menu.chosenModel["hair"] = 0
-	menu.chosenModel["head"] = 0
-	menu.chosenModel["body"] = 0
-	menu.chosenModel["bottom"] = 0
 
 	menu.initMenuButtons()
 
@@ -93,15 +84,42 @@ func (menu *menuSettings) displayMenu(menuName string) {
 					arr = models
 				}
 			}
-			old := menu.chosenModel[strings.ToLower(value.text)]
-			menu.chosenModel[strings.ToLower(value.text)] = raygui.Spinner(rect, menu.chosenModel[strings.ToLower(value.text)], 0, len(arr)-1)
-			if old != menu.chosenModel[strings.ToLower(value.text)] {
+
+			// Can't loop through a struct so have to use switch statement.
+			// Also need player.chosenModel to be a global so that function() will be able to refer to it
+			// as having a function with a parameter doesn't work with the buttons function struct
+			// func(param) != func()
+			var oldValue int
+			var newValue int
+			switch value.text {
+			case "Accessory":
+				oldValue = player.chosenModel.Accessory
+				player.chosenModel.Accessory = raygui.Spinner(rect, player.chosenModel.Accessory, 0, len(arr)-1)
+				newValue = player.chosenModel.Accessory
+			case "Hair":
+				oldValue = player.chosenModel.Hair
+				player.chosenModel.Hair = raygui.Spinner(rect, player.chosenModel.Hair, 0, len(arr)-1)
+				newValue = player.chosenModel.Hair
+			case "Head":
+				oldValue = player.chosenModel.Head
+				player.chosenModel.Head = raygui.Spinner(rect, player.chosenModel.Head, 0, len(arr)-1)
+				newValue = player.chosenModel.Head
+			case "Body":
+				oldValue = player.chosenModel.Body
+				player.chosenModel.Body = raygui.Spinner(rect, player.chosenModel.Body, 0, len(arr)-1)
+				newValue = player.chosenModel.Body
+			case "Bottom":
+				oldValue = player.chosenModel.Bottom
+				player.chosenModel.Bottom = raygui.Spinner(rect, player.chosenModel.Bottom, 0, len(arr)-1)
+				newValue = player.chosenModel.Bottom
+			}
+			if oldValue != newValue {
 				value.function()
 			}
 			// Labels
 			// raygui.Label won't allow for font size change.
 			rl.DrawText(value.text, int32(posX-float32(rl.MeasureText(value.text, int32(labelTextSize))))-int32(labelTextSize), int32(posY), int32(labelTextSize), rl.Black)
-			rl.DrawText(arr[menu.chosenModel[strings.ToLower(value.text)]].name, int32(posX+width)+int32(labelTextSize), int32(posY), int32(labelTextSize), rl.Black)
+			rl.DrawText(arr[newValue].name, int32(posX+width)+int32(labelTextSize), int32(posY), int32(labelTextSize), rl.Black)
 		}
 		posY += height * 1.5
 	}
@@ -155,16 +173,7 @@ func (menu *menuSettings) initMenuButtons() {
 		"main",
 		true,
 	}
-	buttons = nil
-
-	// Customisation menu buttions ------
-	// log.Println("ok")
-	// for key, value := range models {
-	// 	log.Println(key)
-	// 	for mapKey := range value {
-	// 		log.Println(key, mapKey)
-	// 	}
-	// }
+	buttons = nil // reset
 
 	buttons = addButton(buttons, "spinner", "Accessory", menu.changeModel)
 	buttons = addButton(buttons, "spinner", "Hair", menu.changeModel)
@@ -186,16 +195,17 @@ func backToMainMenu() {
 }
 
 func (menu *menuSettings) showPlayer() {
-	menu.playerModel.body.model.Transform = rl.MatrixRotateY(menu.rotation)
-	menu.playerModel.hair.model.Transform = rl.MatrixRotateY(menu.rotation)
-	menu.playerModel.head.model.Transform = rl.MatrixRotateY(menu.rotation)
-	menu.playerModel.accessory.model.Transform = rl.MatrixRotateY(menu.rotation)
-	menu.playerModel.bottom.model.Transform = rl.MatrixRotateY(menu.rotation)
-	rl.DrawModel(menu.playerModel.bottom.model, menu.playerPos, menu.playerScale, menu.playerTint)
-	rl.DrawModel(menu.playerModel.body.model, menu.playerPos, menu.playerScale, menu.playerTint)
-	rl.DrawModel(menu.playerModel.head.model, menu.playerPos, menu.playerScale, menu.playerTint)
-	rl.DrawModel(menu.playerModel.hair.model, menu.playerPos, menu.playerScale, menu.playerTint)
-	rl.DrawModel(menu.playerModel.accessory.model, menu.playerPos, menu.playerScale, menu.playerTint)
+	player.model.accessory.model.Transform = rl.MatrixRotateY(menu.rotation)
+	player.model.hair.model.Transform = rl.MatrixRotateY(menu.rotation)
+	player.model.head.model.Transform = rl.MatrixRotateY(menu.rotation)
+	player.model.body.model.Transform = rl.MatrixRotateY(menu.rotation)
+	player.model.bottom.model.Transform = rl.MatrixRotateY(menu.rotation)
+
+	rl.DrawModel(player.model.accessory.model, menu.playerPos, menu.playerScale, menu.playerTint)
+	rl.DrawModel(player.model.hair.model, menu.playerPos, menu.playerScale, menu.playerTint)
+	rl.DrawModel(player.model.head.model, menu.playerPos, menu.playerScale, menu.playerTint)
+	rl.DrawModel(player.model.body.model, menu.playerPos, menu.playerScale, menu.playerTint)
+	rl.DrawModel(player.model.bottom.model, menu.playerPos, menu.playerScale, menu.playerTint)
 }
 
 type cameraMove struct {
@@ -244,20 +254,20 @@ func (menu *menuSettings) selectRandomModels() {
 		randomSelection := value[randNum]
 		switch key {
 		case "accessory":
-			menu.playerModel.accessory = randomSelection
-			menu.chosenModel["accessory"] = randNum
+			player.model.accessory = randomSelection
+			player.chosenModel.Accessory = randNum
 		case "hair":
-			menu.playerModel.hair = randomSelection
-			menu.chosenModel["hair"] = randNum
+			player.model.hair = randomSelection
+			player.chosenModel.Hair = randNum
 		case "head":
-			menu.playerModel.head = randomSelection
-			menu.chosenModel["head"] = randNum
+			player.model.head = randomSelection
+			player.chosenModel.Head = randNum
 		case "body":
-			menu.playerModel.body = randomSelection
-			menu.chosenModel["body"] = randNum
+			player.model.body = randomSelection
+			player.chosenModel.Body = randNum
 		case "bottom":
-			menu.playerModel.bottom = randomSelection
-			menu.chosenModel["bottom"] = randNum
+			player.model.bottom = randomSelection
+			player.chosenModel.Bottom = randNum
 		}
 	}
 }

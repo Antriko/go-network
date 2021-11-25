@@ -47,10 +47,11 @@ func coordUpdate(userCoord coords, conn *net.UDPConn, addr *net.UDPAddr) {
 	}
 
 	// convert from map to array
-	var coordsArray []coords
-	for _, value := range userCoordsMap {
-		coordsArray = append(coordsArray, value)
-	}
+	// var coordsArray []coords
+	// for _, value := range userCoordsMap {
+	// 	coordsArray = append(coordsArray, value)
+	// }
+
 	jsonData, err := json.Marshal(userCoordsMap)
 	if err != nil {
 		log.Println(err)
