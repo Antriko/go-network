@@ -1,29 +1,30 @@
 package client
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
 	"net"
 	"time"
 
+	"github.com/Antriko/go-network/shared"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type playerInfo struct {
 	username       string
+	ID             uint32
 	pos            rl.Vector3 // 2D space for now
 	movementSpeed  float32
 	size           rl.Vector3
+	scale          float32
 	state          string
 	status         string
 	gameStatus     string
 	chatMessage    string
 	serverConn     *net.TCPConn
 	chatServerConn *net.TCPConn
+	conn           *shared.DualConnection
 	//Texture       rl.Texture2D
-	model       userModel
-	chosenModel chosenModel
+	model              userModel
+	UserModelSelection shared.UserModelSelection
 }
 
 type userModel struct {
@@ -49,6 +50,7 @@ func initPlayer(username string) *playerInfo {
 	player.username = username
 	player.pos = rl.NewVector3(0.0, 0.0, 0.0)
 	player.size = rl.NewVector3(2.0, 2.0, 2.0)
+	player.scale = 2.5
 	player.movementSpeed = 0.1
 
 	player.gameStatus = "move"
@@ -56,10 +58,12 @@ func initPlayer(username string) *playerInfo {
 	// move, typing
 
 	// player.model = rl.LoadModel("models/castle.obj")
-	player.chosenModel = chosenModel{0, 0, 0, 0, 0}
-
-	if player.username != "tmp" {
-		player.connChat()
+	player.UserModelSelection = shared.UserModelSelection{
+		Accessory: 0,
+		Hair:      0,
+		Head:      0,
+		Body:      0,
+		Bottom:    0,
 	}
 
 	return player
@@ -123,10 +127,11 @@ func (player *playerInfo) playerMovement() {
 func (player *playerInfo) renderPlayer() {
 	rl.DrawCubeWires(player.pos, player.size.X, player.size.Y, player.size.Z, rl.Black)
 
-	rl.DrawModel(player.model.hair.model, player.pos, 5.0, rl.White)
-	rl.DrawModel(player.model.head.model, player.pos, 5.0, rl.White)
-	rl.DrawModel(player.model.body.model, player.pos, 5.0, rl.White)
-	rl.DrawModel(player.model.bottom.model, player.pos, 5.0, rl.White)
+	rl.DrawModel(player.model.accessory.model, player.pos, player.scale, rl.White)
+	rl.DrawModel(player.model.hair.model, player.pos, player.scale, rl.White)
+	rl.DrawModel(player.model.head.model, player.pos, player.scale, rl.White)
+	rl.DrawModel(player.model.body.model, player.pos, player.scale, rl.White)
+	rl.DrawModel(player.model.bottom.model, player.pos, player.scale, rl.White)
 
 }
 func (player *playerInfo) renderPlayerTag() {
@@ -136,68 +141,20 @@ func (player *playerInfo) renderPlayerTag() {
 	rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-40, tagSize, rl.Black)
 }
 
-func (player *playerInfo) connChat() {
-	addr := net.TCPAddr{
-		Port: 8070,
-		IP:   net.ParseIP("localhost"),
-	}
-
-	conn, err := net.DialTCP("tcp", nil, &addr)
-	if err != nil {
-		log.Println("Chat server error", err)
-	}
-	player.chatServerConn = conn
-
-	// handle new chat messages
-	p := make([]byte, 1024)
-	go func() {
-		for {
-			n, err := player.chatServerConn.Read(p)
-			if err != nil {
-				log.Println("TCP data err", err)
-			}
-			log.Printf("%s: %s", conn.RemoteAddr().String(), string(p[:n]))
-
-			var message ChatMessage
-			err = json.Unmarshal(p[:n], &message)
-			if err != nil {
-				log.Println("Json error", err)
-				return
-			}
-			chatHistory = append(chatHistory, message)
-		}
-	}()
-}
-
 func (player *playerInfo) sendChatMessage() {
 
-	// send username also
-	jsonData, err := json.Marshal(ChatMessage{
-		"message",
-		player.username,
-		player.chatMessage,
-		time.Now(),
-	})
-	if err != nil {
-		log.Printf("JSON data err %v", err)
-		return
+	DataWriteChan <- &shared.C2SChatMessagePacket{
+		Username: player.username,
+		Type:     shared.AllChat,
+		Message:  player.chatMessage,
 	}
-	fmt.Fprintf(player.chatServerConn, "%s", jsonData)
 	player.chatMessage = ""
 
 }
 
 type ChatMessage struct {
-	Info     string // all, PM, local
 	Username string
-	Message  string
+	Type     shared.ChatType
 	Time     time.Time
-}
-
-type chosenModel struct {
-	Accessory int
-	Hair      int
-	Head      int
-	Body      int
-	Bottom    int
+	Message  string
 }

@@ -1,18 +1,17 @@
 package client
 
 import (
-	"bufio"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math"
-	"net"
 	"time"
 
+	"github.com/Antriko/go-network/shared"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var players map[string]coords
+var players = make(map[string]shared.Coords)
+var connectedPlayers = make(map[string]shared.OtherPlayer)
 var chatHistory []ChatMessage
 var chatScroll = 0
 
@@ -40,40 +39,7 @@ func game() {
 	player.renderPlayerTag()
 	renderOtherTag()
 	renderChat()
-	go sendServerStatus()
 
-}
-
-func sendServerStatus() {
-	p := make([]byte, 1024)
-	conn, err := net.Dial("udp", "localhost:8081")
-	if err != nil {
-		log.Printf("UDP ERR: %v", err)
-		return
-	}
-
-	jsonData, err := json.Marshal(coords{player.username, player.pos.X, player.pos.Y, player.pos.Z, time.Now()})
-
-	if err != nil {
-		log.Printf("JSON ERR: %v", err)
-		return
-	}
-
-	fmt.Fprintf(conn, "%s", jsonData) // string vulnerability or something
-	n, err := bufio.NewReader(conn).Read(p)
-	if err != nil {
-		fmt.Printf("Some error %v\n", err)
-	}
-	conn.Close()
-	p = p[0:n]
-
-	var userCoordsMap = make(map[string]coords)
-	err = json.Unmarshal(p, &userCoordsMap)
-	if err != nil {
-		//log.Printf("JSON ERR: %v", err)
-		return
-	}
-	players = userCoordsMap
 }
 
 type coords struct {
@@ -84,20 +50,24 @@ type coords struct {
 	LastActivity time.Time
 }
 
-type otherPlayer struct {
-	username    string
-	chosenModel chosenModel
-}
-
 func renderOthers() {
-	log.Println(users)
 	for key, value := range players {
 		if key != player.username {
 			playerPos := rl.NewVector3(value.X, value.Y, value.Z)
 			rl.DrawCubeWires(playerPos, player.size.X, player.size.Y, player.size.Z, rl.Black) // default size - players
+			renderFromUserModelSelection(connectedPlayers[value.Username].UserModelSelection, playerPos)
 		}
 	}
 }
+
+func renderFromUserModelSelection(UserModelSelection shared.UserModelSelection, pos rl.Vector3) {
+	rl.DrawModel(arrayOfModels["accessory"][UserModelSelection.Accessory].model, pos, player.scale, rl.White)
+	rl.DrawModel(arrayOfModels["hair"][UserModelSelection.Hair].model, pos, player.scale, rl.White)
+	rl.DrawModel(arrayOfModels["head"][UserModelSelection.Head].model, pos, player.scale, rl.White)
+	rl.DrawModel(arrayOfModels["body"][UserModelSelection.Body].model, pos, player.scale, rl.White)
+	rl.DrawModel(arrayOfModels["bottom"][UserModelSelection.Bottom].model, pos, player.scale, rl.White)
+}
+
 func renderOtherTag() {
 	for key, value := range players {
 		if key != player.username {
@@ -126,7 +96,16 @@ func renderChat() {
 		chatLen = 0
 	}
 	for i := len(chatHistory) - 1; i >= chatLen; i-- {
-		message := fmt.Sprintf("[%v:%v:%v] %s: %s", chatHistory[i].Time.Hour(), chatHistory[i].Time.Minute(), chatHistory[i].Time.Second(), chatHistory[i].Username, chatHistory[i].Message)
+		// log.Println(chatHistory[i].Time.Format("15:04:05"))
+		var message string
+		switch chatHistory[i].Type {
+		case shared.AllChat: // All chat
+			message = fmt.Sprintf("[%v] %s: %s", chatHistory[i].Time.Format("15:04:05"), chatHistory[i].Username, chatHistory[i].Message)
+		case shared.UserConnect: // User connected
+			message = fmt.Sprintf("[%v] User %s has connected.", chatHistory[i].Time.Format("15:04:05"), chatHistory[i].Username)
+		case shared.UserDisconnect:
+			message = fmt.Sprintf("[%v] User %s has disonnected.", chatHistory[i].Time.Format("15:04:05"), chatHistory[i].Username)
+		}
 		rl.DrawText(message, 10, int32(rl.GetScreenHeight()-20-(20*(len(chatHistory)-i))), 20, rl.Black)
 	}
 

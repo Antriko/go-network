@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
-	"net"
 	"time"
 
+	"github.com/Antriko/go-network/shared"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -18,7 +18,7 @@ var player *playerInfo = initPlayer("tmp")
 var camera = NewCustomCamera(10.0, 3.0, 100.0)
 var models = make(map[string]map[string]modelEntity)
 var arrayOfModels = make(map[string][]modelEntity)
-var users = make(map[string]otherPlayer)
+var users = make(map[string]shared.OtherPlayer)
 
 // TODO move camera to game/player struct instead of global
 
@@ -74,7 +74,7 @@ func Start() {
 			game()
 		}
 
-		// debugging()
+		debugging()
 
 		rl.EndDrawing()
 	}
@@ -83,73 +83,17 @@ func Start() {
 }
 
 func play() {
-	go player.connectUser()
-	go player.connChat()
+	go serverConn()
 	player.state = "game"
 	// create player
 
 }
-func (player *playerInfo) connectUser() {
-	addr := net.TCPAddr{
-		Port: 8079,
-		IP:   net.ParseIP("localhost"),
-	}
-	conn, err := net.DialTCP("tcp", nil, &addr)
-	if err != nil {
-		log.Println("Chat server error", err)
-	}
-	player.serverConn = conn
-	usr := userInfo{
-		"connect",
-		player.username,
-		time.Now(),
-		player.chosenModel,
-	}
-	jsonData, err := json.Marshal(usr)
-	log.Println(usr)
-	if err != nil {
-		log.Printf("JSON data err %v", err)
-		return
-	}
-	fmt.Fprintf(player.serverConn, "%s", jsonData) // send user init to server
-
-	// handle server response
-	p := make([]byte, 1024)
-	go func() {
-		for {
-			n, err := player.serverConn.Read(p)
-			if err != nil {
-				log.Println("TCP data err", err)
-				return
-			}
-			log.Printf("%s: %s", conn.RemoteAddr().String(), string(p[:n]))
-			// add/remove users
-
-			var userInfo userInfo
-			_ = json.Unmarshal(p[:n], &userInfo)
-			log.Println(userInfo)
-			switch userInfo.Info {
-			case "connect":
-				users[userInfo.Username] = otherPlayer{userInfo.Username, userInfo.ChosenModel}
-			case "disconnect":
-				delete(users, userInfo.Username)
-			}
-			// User connected/disconnected info
-			chatHistory = append(chatHistory, ChatMessage{
-				"message",
-				"[SERVER]",
-				"User " + userInfo.Username + " has " + userInfo.Info + ".",
-				userInfo.Time,
-			})
-		}
-	}()
-}
 
 type userInfo struct {
-	Info        string
-	Username    string
-	Time        time.Time
-	ChosenModel chosenModel
+	Info               string
+	Username           string
+	Time               time.Time
+	UserModelSelection shared.UserModelSelection
 }
 
 type modelJson struct {
