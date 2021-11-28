@@ -86,32 +86,32 @@ func (menu *menuSettings) displayMenu(menuName string) {
 			}
 
 			// Can't loop through a struct so have to use switch statement.
-			// Also need player.chosenModel to be a global so that function() will be able to refer to it
+			// Also need player.UserModelSelection to be a global so that function() will be able to refer to it
 			// as having a function with a parameter doesn't work with the buttons function struct
 			// func(param) != func()
 			var oldValue int
 			var newValue int
 			switch value.text {
 			case "Accessory":
-				oldValue = player.chosenModel.Accessory
-				player.chosenModel.Accessory = raygui.Spinner(rect, player.chosenModel.Accessory, 0, len(arr)-1)
-				newValue = player.chosenModel.Accessory
+				oldValue = player.UserModelSelection.Accessory
+				player.UserModelSelection.Accessory = raygui.Spinner(rect, player.UserModelSelection.Accessory, 0, len(arr)-1)
+				newValue = player.UserModelSelection.Accessory
 			case "Hair":
-				oldValue = player.chosenModel.Hair
-				player.chosenModel.Hair = raygui.Spinner(rect, player.chosenModel.Hair, 0, len(arr)-1)
-				newValue = player.chosenModel.Hair
+				oldValue = player.UserModelSelection.Hair
+				player.UserModelSelection.Hair = raygui.Spinner(rect, player.UserModelSelection.Hair, 0, len(arr)-1)
+				newValue = player.UserModelSelection.Hair
 			case "Head":
-				oldValue = player.chosenModel.Head
-				player.chosenModel.Head = raygui.Spinner(rect, player.chosenModel.Head, 0, len(arr)-1)
-				newValue = player.chosenModel.Head
+				oldValue = player.UserModelSelection.Head
+				player.UserModelSelection.Head = raygui.Spinner(rect, player.UserModelSelection.Head, 0, len(arr)-1)
+				newValue = player.UserModelSelection.Head
 			case "Body":
-				oldValue = player.chosenModel.Body
-				player.chosenModel.Body = raygui.Spinner(rect, player.chosenModel.Body, 0, len(arr)-1)
-				newValue = player.chosenModel.Body
+				oldValue = player.UserModelSelection.Body
+				player.UserModelSelection.Body = raygui.Spinner(rect, player.UserModelSelection.Body, 0, len(arr)-1)
+				newValue = player.UserModelSelection.Body
 			case "Bottom":
-				oldValue = player.chosenModel.Bottom
-				player.chosenModel.Bottom = raygui.Spinner(rect, player.chosenModel.Bottom, 0, len(arr)-1)
-				newValue = player.chosenModel.Bottom
+				oldValue = player.UserModelSelection.Bottom
+				player.UserModelSelection.Bottom = raygui.Spinner(rect, player.UserModelSelection.Bottom, 0, len(arr)-1)
+				newValue = player.UserModelSelection.Bottom
 			}
 			if oldValue != newValue {
 				value.function()
@@ -255,19 +255,19 @@ func (menu *menuSettings) selectRandomModels() {
 		switch key {
 		case "accessory":
 			player.model.accessory = randomSelection
-			player.chosenModel.Accessory = randNum
+			player.UserModelSelection.Accessory = randNum
 		case "hair":
 			player.model.hair = randomSelection
-			player.chosenModel.Hair = randNum
+			player.UserModelSelection.Hair = randNum
 		case "head":
 			player.model.head = randomSelection
-			player.chosenModel.Head = randNum
+			player.UserModelSelection.Head = randNum
 		case "body":
 			player.model.body = randomSelection
-			player.chosenModel.Body = randNum
+			player.UserModelSelection.Body = randNum
 		case "bottom":
 			player.model.bottom = randomSelection
-			player.chosenModel.Bottom = randNum
+			player.UserModelSelection.Bottom = randNum
 		}
 	}
 }
