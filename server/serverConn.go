@@ -128,6 +128,7 @@ func serverPacketHandler(conn *shared.DualConnection) {
 						X:        typed.X,
 						Y:        typed.Y,
 						Z:        typed.Z,
+						Facing:   typed.Facing,
 					}
 
 				case *shared.C2SChatMessagePacket:

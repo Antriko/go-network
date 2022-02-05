@@ -115,4 +115,7 @@ func debugging() {
 	rl.DrawText(fmt.Sprintf("gameState: %v", player.gameStatus), 20, int32(incrY()), 20, rl.Black)
 	rl.DrawText(fmt.Sprintf("playerPos: %v", player.pos), 20, int32(incrY()), 20, rl.Black)
 	rl.DrawText(fmt.Sprintf("rotation: %v", menu.rotation), 20, int32(incrY()), 20, rl.Black)
+	rl.DrawText(fmt.Sprintf("playerFACING: %v", player.rotation.facing), 20, int32(incrY()), 20, rl.Black)
+	rl.DrawText(fmt.Sprintf("playerROTATION: %v", player.rotation.rotation), 20, int32(incrY()), 20, rl.Black)
+
 }

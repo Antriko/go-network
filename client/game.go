@@ -27,6 +27,7 @@ func game() {
 
 	camera.SetTarget(player.pos)
 	camera.SetPosition(player.pos.X, player.pos.Y+10, player.pos.Z+10)
+	player.playerRotation()
 
 	rl.BeginDrawing()
 
@@ -55,12 +56,18 @@ func renderOthers() {
 		if key != player.username {
 			playerPos := rl.NewVector3(value.X, value.Y, value.Z)
 			rl.DrawCubeWires(playerPos, player.size.X, player.size.Y, player.size.Z, rl.Black) // default size - players
-			renderFromUserModelSelection(connectedPlayers[value.Username].UserModelSelection, playerPos)
+			renderFromUserModelSelection(connectedPlayers[value.Username].UserModelSelection, playerPos, value.Facing)
 		}
 	}
 }
 
-func renderFromUserModelSelection(UserModelSelection shared.UserModelSelection, pos rl.Vector3) {
+func renderFromUserModelSelection(UserModelSelection shared.UserModelSelection, pos rl.Vector3, rotation float32) {
+	arrayOfModels["accessory"][UserModelSelection.Accessory].model.Transform = rl.MatrixRotateY(rotation * (math.Pi / 180))
+	arrayOfModels["hair"][UserModelSelection.Accessory].model.Transform = rl.MatrixRotateY(rotation * (math.Pi / 180))
+	arrayOfModels["head"][UserModelSelection.Accessory].model.Transform = rl.MatrixRotateY(rotation * (math.Pi / 180))
+	arrayOfModels["body"][UserModelSelection.Accessory].model.Transform = rl.MatrixRotateY(rotation * (math.Pi / 180))
+	arrayOfModels["bottom"][UserModelSelection.Accessory].model.Transform = rl.MatrixRotateY(rotation * (math.Pi / 180))
+
 	rl.DrawModel(arrayOfModels["accessory"][UserModelSelection.Accessory].model, pos, player.scale, rl.White)
 	rl.DrawModel(arrayOfModels["hair"][UserModelSelection.Hair].model, pos, player.scale, rl.White)
 	rl.DrawModel(arrayOfModels["head"][UserModelSelection.Head].model, pos, player.scale, rl.White)
