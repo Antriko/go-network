@@ -226,20 +226,22 @@ func (player *playerInfo) renderPlayer() {
 	player.model.body.model.Transform = rl.MatrixRotateY(player.rotation.rotation * (math.Pi / 180))
 	player.model.bottom.model.Transform = rl.MatrixRotateY(player.rotation.rotation * (math.Pi / 180))
 
-	rl.DrawCubeWires(player.pos, player.size.X, player.size.Y, player.size.Z, rl.Black)
+	// rl.DrawCubeWires(player.pos, player.size.X, player.size.Y, player.size.Z, rl.Black)
 
 	rl.DrawModel(player.model.accessory.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.hair.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.head.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.body.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.bottom.model, player.pos, player.scale, rl.White)
-
 }
 func (player *playerInfo) renderPlayerTag() {
-	cubeScreenPosition := rl.GetWorldToScreen(rl.NewVector3(player.pos.X, player.pos.Y, player.pos.Z), camera.Camera)
+	tagOffset := 6
+	cubeV3 := rl.NewVector3(player.pos.X, player.pos.Y+float32(tagOffset), player.pos.Z)
+	cubeScreenPosition := rl.GetWorldToScreen(cubeV3, camera.Camera)
 	header := player.username
+
 	tagSize := int32(20)
-	rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-40, tagSize, rl.Black)
+	rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-int32(tagOffset), tagSize, rl.Black)
 }
 
 func (player *playerInfo) sendChatMessage() {

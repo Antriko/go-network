@@ -55,7 +55,7 @@ func renderOthers() {
 	for key, value := range players {
 		if key != player.username {
 			playerPos := rl.NewVector3(value.X, value.Y, value.Z)
-			rl.DrawCubeWires(playerPos, player.size.X, player.size.Y, player.size.Z, rl.Black) // default size - players
+			// rl.DrawCubeWires(playerPos, player.size.X, player.size.Y, player.size.Z, rl.Black) // default size - players
 			renderFromUserModelSelection(connectedPlayers[value.Username].UserModelSelection, playerPos, value.Facing)
 		}
 	}
@@ -78,7 +78,8 @@ func renderFromUserModelSelection(UserModelSelection shared.UserModelSelection, 
 func renderOtherTag() {
 	for key, value := range players {
 		if key != player.username {
-			cubeV3 := rl.NewVector3(value.X, value.Y, value.Z)
+			tagOffset := 6
+			cubeV3 := rl.NewVector3(value.X, value.Y+float32(tagOffset), value.Z)
 			cubeScreenPosition := rl.GetWorldToScreen(cubeV3, camera.Camera)
 			header := value.Username
 			difference := rl.Vector3Subtract(rl.NewVector3(player.pos.X, player.pos.Y, player.pos.Z), cubeV3).Z
@@ -88,7 +89,7 @@ func renderOtherTag() {
 					tmpDiff = 20
 				}
 				tagSize := int32(math.Abs(20 - float64(tmpDiff))) // neg to pos, pos to neg
-				rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-40, tagSize, rl.Black)
+				rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y), tagSize, rl.Black)
 			}
 
 		}

@@ -3,6 +3,7 @@
 package client
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"strings"
@@ -57,6 +58,7 @@ func (menu *menuSettings) displayMenu(menuName string) {
 	height := float32(math.Round(float64(rl.GetScreenWidth()) * 0.025)) // yeah.
 	labelTextSize := height / 2
 	raygui.SetStyleProperty(raygui.GlobalTextFontsize, int64(height)) // dynamically set font size depending on screen height
+	raygui.SetStyleProperty(raygui.TextboxTextFontsize, int64(height))
 	var getMenu menuButtons
 	for key, value := range menu.menus {
 		if key == menuName {
@@ -74,6 +76,13 @@ func (menu *menuSettings) displayMenu(menuName string) {
 		switch value.typeOf {
 		case "button":
 			buttonClicked := raygui.Button(rect, value.text)
+			if buttonClicked {
+				value.function()
+			}
+		case "username":
+			player.username = changeUsername(raygui.TextBox(rect, player.username))
+			rect.X += rect.Width + 10 // offset 2nd button to right with 10px margin
+			buttonClicked := raygui.Button(rect, "Gen name")
 			if buttonClicked {
 				value.function()
 			}
@@ -165,6 +174,7 @@ func addButton(buttons []button, typeOf string, text string, function func()) []
 func (menu *menuSettings) initMenuButtons() {
 	// Main menu buttons ------
 	var buttons []button
+	buttons = addButton(buttons, "username", "username", randomName)
 	buttons = addButton(buttons, "button", "play", play)
 	buttons = addButton(buttons, "button", "random", menu.selectRandomModels)
 	buttons = addButton(buttons, "button", "customise", customise)
@@ -192,6 +202,18 @@ func (menu *menuSettings) initMenuButtons() {
 
 func backToMainMenu() {
 	player.state = "menu"
+}
+
+func randomName() {
+	player.username = fmt.Sprint(rand.Intn(10000))
+}
+func changeUsername(name string) string {
+	// Add limitations
+	// char limit of 8
+	if len(name) > 8 {
+		name = name[:len(name)-1]
+	}
+	return name
 }
 
 func (menu *menuSettings) showPlayer() {
