@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"image/color"
 	"log"
 	"math"
 	"time"
@@ -33,7 +34,7 @@ func game() {
 
 	rl.ClearBackground(rl.RayWhite)
 	rl.BeginMode3D(camera.Camera)
-	rl.DrawGrid(10, 1.0)
+	renderGridFloor()
 	player.renderPlayer()
 	renderOthers()
 	rl.EndMode3D()
@@ -49,6 +50,28 @@ type coords struct {
 	Y            float32
 	Z            float32
 	LastActivity time.Time
+}
+
+func renderGridFloor() {
+	// grid of light and dark green
+	slices := 10
+	spacing := float32(5.0)
+	// -splice*spacing to +splice*spacing in XZ
+	// use modulus%2 to interchange between colours, add +x for every z
+	for x := slices * -1; x < slices; x++ {
+		for z := slices * -1; z < slices; z++ {
+			// Would be a lot cleaner if ternary operators worked in go
+			// col = (z+x)%2 == 0 ? dark : light
+			var col color.RGBA
+			if (z+x)%2 == 0 {
+				col = rl.NewColor(2, 35, 28, 255)
+			} else {
+				col = rl.NewColor(0, 77, 37, 255)
+			}
+			rl.DrawCube(rl.NewVector3(float32(x)*spacing, 0, float32(z)*spacing), spacing, 0, spacing, col)
+		}
+	}
+
 }
 
 func renderOthers() {

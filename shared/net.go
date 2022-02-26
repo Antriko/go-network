@@ -266,3 +266,17 @@ func (c *DualConnection) resetTimer() {
 	}
 	c.timeout.Reset(time.Second * 10)
 }
+
+// Close closes both connections
+func (c *DualConnection) Close() error {
+	err := c.TLSConnection.Close()
+	err2 := c.DTLSConnection.Close()
+	if err != nil {
+		return err
+	}
+	if err2 != nil {
+		return err
+	}
+
+	return nil
+}

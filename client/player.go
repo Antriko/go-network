@@ -1,7 +1,9 @@
 package client
 
 import (
+	"log"
 	"math"
+	"math/rand"
 	"net"
 	"time"
 
@@ -50,17 +52,25 @@ type playerRotation struct {
 
 func initPlayer(username string) *playerInfo {
 	player := &playerInfo{}
-	// 3D
-	//player.pos = rl.NewVector3(0.0, 1.0, 0.0)
-	//player.Texture = playerTexture
+
+	// random spawn spot
+	// between -xy to xy
+	max := 10
+	min := -10
 
 	player.state = "menu"
 	player.username = username
-	player.pos = rl.NewVector3(0.0, 0.0, 0.0)
+	rand.Seed(time.Now().UnixNano()) // new seed so players dont have same pos
+	player.pos = rl.NewVector3(float32(rand.Intn(max-min)+min), 0.0, float32(rand.Intn(max-min)+min))
+	log.Println(player.pos)
 	player.size = rl.NewVector3(2.0, 2.0, 2.0)
 	player.scale = 2.5
 	player.movementSpeed = 0.1
-	player.rotation.rotation = 0.0
+
+	// random facing when spawn
+	// set to 180 if want to face down when spawn
+	player.rotation.facing = float32(rand.Intn(7) * 45)
+	player.rotation.rotation = player.rotation.facing
 	player.rotation.rotationSpeed = 0.25
 
 	player.gameStatus = "move"
