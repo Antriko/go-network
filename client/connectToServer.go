@@ -54,9 +54,10 @@ func serverConn() {
 							select {
 							case <-timer.C:
 								DataWriteChan <- &shared.C2SUpdatePlayerPosPacket{
-									X: player.pos.X,
-									Y: player.pos.Y,
-									Z: player.pos.Z,
+									X:      player.pos.X,
+									Y:      player.pos.Y,
+									Z:      player.pos.Z,
+									Facing: player.rotation.facing,
 								}
 								timer.Reset(time.Second)
 							}

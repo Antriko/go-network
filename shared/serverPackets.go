@@ -18,6 +18,7 @@ type Coords struct {
 	X        float32 `json:"x"`
 	Y        float32 `json:"y"`
 	Z        float32 `json:"z"`
+	Facing   float32 `json:"f"`
 }
 
 // Marshal converts a C2SChatMessagePacket into []byte

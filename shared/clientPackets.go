@@ -13,7 +13,7 @@ import (
 
 // C2SUpdatePlayerPosPacket updates the server with the clients desired position
 type C2SUpdatePlayerPosPacket struct {
-	X, Y, Z float32
+	X, Y, Z, Facing float32
 }
 
 // Marshal converts a MapPosPacket into []byte
@@ -24,19 +24,21 @@ func (m *C2SUpdatePlayerPosPacket) Marshal() ([]byte, error) {
 	binary.Write(buf, binary.LittleEndian, m.X)
 	binary.Write(buf, binary.LittleEndian, m.Y)
 	binary.Write(buf, binary.LittleEndian, m.Z)
+	binary.Write(buf, binary.LittleEndian, m.Facing)
 
 	return buf.Bytes(), nil
 }
 
 // Unmarshal converts []byte into a MapPosPacket
 func (m *C2SUpdatePlayerPosPacket) Unmarshal(b []byte) error {
-	if len(b) != 4+4+4 {
+	if len(b) != 4+4+4+4 {
 		return ErrMissingPacketData
 	}
 
 	m.X = math.Float32frombits(binary.LittleEndian.Uint32(b[:4]))
 	m.Y = math.Float32frombits(binary.LittleEndian.Uint32(b[4:8]))
 	m.Z = math.Float32frombits(binary.LittleEndian.Uint32(b[8:12]))
+	m.Facing = math.Float32frombits(binary.LittleEndian.Uint32(b[12:16]))
 
 	return nil
 }

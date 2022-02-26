@@ -31,8 +31,7 @@ func Start() {
 	rl.SetTargetFPS(60)
 	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
 
-	username := fmt.Sprint(rand.Intn(10000))
-	player.username = username
+	player.username = ""
 
 	// Model loading - Load all models (dynamically, reading each file dir) and save into a global model map with nested maps
 	// map["head"]map["default"] ect
@@ -83,6 +82,10 @@ func Start() {
 }
 
 func play() {
+	// some validation before conneting to game/server
+	if player.username == "" {
+		return
+	}
 	go serverConn()
 	player.state = "game"
 	// create player
@@ -103,16 +106,21 @@ type modelJson struct {
 
 func debugging() {
 	// Debugging
-	start := 20
+	start := 10
+	posX := int32(10)
+	posY := int32(10)
 	incrY := func() int {
-		start += 20
+		start += 10
 		return start
 	}
-	rl.DrawText(fmt.Sprintf("Username: %v", player.username), 20, int32(incrY()), 20, rl.Black)
-	rl.DrawText(fmt.Sprintf("FPS: %v", rl.GetFPS()), 20, int32(incrY()), 20, rl.Black)
-	rl.DrawText(fmt.Sprintf("MousePos: %v", rl.GetMousePosition()), 20, int32(incrY()), 20, rl.Black)
-	rl.DrawText(fmt.Sprintf("playerState: %v", player.state), 20, int32(incrY()), 20, rl.Black)
-	rl.DrawText(fmt.Sprintf("gameState: %v", player.gameStatus), 20, int32(incrY()), 20, rl.Black)
-	rl.DrawText(fmt.Sprintf("playerPos: %v", player.pos), 20, int32(incrY()), 20, rl.Black)
-	rl.DrawText(fmt.Sprintf("rotation: %v", menu.rotation), 20, int32(incrY()), 20, rl.Black)
+	rl.DrawText(fmt.Sprintf("Username: %v", player.username), posX, int32(incrY()), posY, rl.Black)
+	rl.DrawText(fmt.Sprintf("FPS: %v", rl.GetFPS()), posX, int32(incrY()), posY, rl.Black)
+	rl.DrawText(fmt.Sprintf("MousePos: %v", rl.GetMousePosition()), posX, int32(incrY()), posY, rl.Black)
+	rl.DrawText(fmt.Sprintf("playerState: %v", player.state), posX, int32(incrY()), posY, rl.Black)
+	rl.DrawText(fmt.Sprintf("gameState: %v", player.gameStatus), posX, int32(incrY()), posY, rl.Black)
+	rl.DrawText(fmt.Sprintf("playerPos: %v", player.pos), posX, int32(incrY()), posY, rl.Black)
+	rl.DrawText(fmt.Sprintf("rotation: %v", menu.rotation), posX, int32(incrY()), posY, rl.Black)
+	rl.DrawText(fmt.Sprintf("playerFACING: %v", player.rotation.facing), posX, int32(incrY()), posY, rl.Black)
+	rl.DrawText(fmt.Sprintf("playerROTATION: %v", player.rotation.rotation), posX, int32(incrY()), posY, rl.Black)
+
 }

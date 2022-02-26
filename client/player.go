@@ -1,6 +1,7 @@
 package client
 
 import (
+	"math"
 	"net"
 	"time"
 
@@ -23,6 +24,7 @@ type playerInfo struct {
 	chatServerConn *net.TCPConn
 	conn           *shared.DualConnection
 	//Texture       rl.Texture2D
+	rotation           playerRotation
 	model              userModel
 	UserModelSelection shared.UserModelSelection
 }
@@ -39,6 +41,12 @@ type modelEntity struct {
 	category string
 	model    rl.Model
 }
+type playerRotation struct {
+	rotation      float32
+	rotationSpeed float32
+	facing        float32
+	timeCount     float32
+}
 
 func initPlayer(username string) *playerInfo {
 	player := &playerInfo{}
@@ -52,12 +60,13 @@ func initPlayer(username string) *playerInfo {
 	player.size = rl.NewVector3(2.0, 2.0, 2.0)
 	player.scale = 2.5
 	player.movementSpeed = 0.1
+	player.rotation.rotation = 0.0
+	player.rotation.rotationSpeed = 0.25
 
 	player.gameStatus = "move"
 	player.chatMessage = ""
 	// move, typing
 
-	// player.model = rl.LoadModel("models/castle.obj")
 	player.UserModelSelection = shared.UserModelSelection{
 		Accessory: 0,
 		Hair:      0,
@@ -96,18 +105,61 @@ func (player *playerInfo) playerTyping() {
 
 func (player *playerInfo) playerMovement() {
 
+	// Determine where player is facing
+	left, right, up, down := false, false, false, false
+
 	// Left - Right
 	if rl.IsKeyDown(rl.KeyA) {
 		player.pos.X -= player.movementSpeed
+		left = true
 	} else if rl.IsKeyDown(rl.KeyD) {
 		player.pos.X += player.movementSpeed
+		right = true
 	}
 
 	// Up - Down
 	if rl.IsKeyDown(rl.KeyW) {
 		player.pos.Z -= player.movementSpeed
+		up = true
 	} else if rl.IsKeyDown(rl.KeyS) {
 		player.pos.Z += player.movementSpeed
+		down = true
+	}
+
+	// Get where player is facing
+	switch {
+	case up && left:
+		player.rotation.facing = 315
+		player.rotation.timeCount = 0
+		break
+	case up && right:
+		player.rotation.facing = 45
+		player.rotation.timeCount = 0
+		break
+	case down && left:
+		player.rotation.facing = 225
+		player.rotation.timeCount = 0
+		break
+	case down && right:
+		player.rotation.facing = 135
+		player.rotation.timeCount = 0
+		break
+	case up:
+		player.rotation.facing = 0
+		player.rotation.timeCount = 0
+		break
+	case right:
+		player.rotation.facing = 90
+		player.rotation.timeCount = 0
+		break
+	case down:
+		player.rotation.facing = 180
+		player.rotation.timeCount = 0
+		break
+	case left:
+		player.rotation.facing = 270
+		player.rotation.timeCount = 0
+		break
 	}
 
 	// Camera movement
@@ -124,21 +176,72 @@ func (player *playerInfo) playerMovement() {
 	}
 }
 
+func (player *playerInfo) playerRotation() {
+	// pivot the rotation towards facing
+	// slow down once eaching facing
+
+	// To make sure distance is between 0 and 360
+	clockwiseDistance := normaliseAngle(player.rotation.facing - player.rotation.rotation)
+	antiClockwiseDistance := normaliseAngle(player.rotation.rotation - player.rotation.facing)
+
+	// Securely set threshold to complete lerp once lerp transition is close enough
+	threshold := float32(5.0)
+	if clockwiseDistance < threshold || antiClockwiseDistance < threshold {
+		player.rotation.rotation = player.rotation.facing
+		return
+	}
+
+	rotation := rl.NewVector2(player.rotation.rotation, 0.0)
+	facing := rl.NewVector2(player.rotation.facing, 0.0)
+
+	// Find quickest then set facing
+	if clockwiseDistance < antiClockwiseDistance {
+		if player.rotation.facing < player.rotation.rotation {
+			facing.X += 360
+		}
+	} else {
+		if player.rotation.facing > player.rotation.rotation {
+			facing.X -= 360
+		}
+	}
+
+	newRotation := rl.Vector2Lerp(rotation, facing, player.rotation.rotationSpeed)
+	player.rotation.rotation = normaliseAngle(newRotation.X)
+}
+func normaliseAngle(angle float32) float32 {
+	for angle < 0 {
+		angle += 360
+	}
+	for angle >= 360 {
+		angle -= 360
+	}
+	return angle
+}
+
 func (player *playerInfo) renderPlayer() {
-	rl.DrawCubeWires(player.pos, player.size.X, player.size.Y, player.size.Z, rl.Black)
+
+	player.model.accessory.model.Transform = rl.MatrixRotateY(player.rotation.rotation * (math.Pi / 180))
+	player.model.hair.model.Transform = rl.MatrixRotateY(player.rotation.rotation * (math.Pi / 180))
+	player.model.head.model.Transform = rl.MatrixRotateY(player.rotation.rotation * (math.Pi / 180))
+	player.model.body.model.Transform = rl.MatrixRotateY(player.rotation.rotation * (math.Pi / 180))
+	player.model.bottom.model.Transform = rl.MatrixRotateY(player.rotation.rotation * (math.Pi / 180))
+
+	// rl.DrawCubeWires(player.pos, player.size.X, player.size.Y, player.size.Z, rl.Black)
 
 	rl.DrawModel(player.model.accessory.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.hair.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.head.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.body.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.bottom.model, player.pos, player.scale, rl.White)
-
 }
 func (player *playerInfo) renderPlayerTag() {
-	cubeScreenPosition := rl.GetWorldToScreen(rl.NewVector3(player.pos.X, player.pos.Y, player.pos.Z), camera.Camera)
+	tagOffset := 6
+	cubeV3 := rl.NewVector3(player.pos.X, player.pos.Y+float32(tagOffset), player.pos.Z)
+	cubeScreenPosition := rl.GetWorldToScreen(cubeV3, camera.Camera)
 	header := player.username
+
 	tagSize := int32(20)
-	rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-40, tagSize, rl.Black)
+	rl.DrawText(header, (int32(cubeScreenPosition.X) - (rl.MeasureText(header, tagSize) / 2)), int32(cubeScreenPosition.Y)-int32(tagOffset), tagSize, rl.Black)
 }
 
 func (player *playerInfo) sendChatMessage() {
