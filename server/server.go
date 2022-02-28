@@ -20,6 +20,7 @@ type UserConnection struct {
 }
 
 func Start() { // goroutine for all the for{} loop
+	worldGen()
 	go server()
 	for {
 	}
