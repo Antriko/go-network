@@ -1,7 +1,6 @@
 package client
 
 import (
-	"log"
 	"math"
 	"math/rand"
 	"net"
@@ -62,7 +61,6 @@ func initPlayer(username string) *playerInfo {
 	player.username = username
 	rand.Seed(time.Now().UnixNano()) // new seed so players dont have same pos
 	player.pos = rl.NewVector3(float32(rand.Intn(max-min)+min), 0.0, float32(rand.Intn(max-min)+min))
-	log.Println(player.pos)
 	player.size = rl.NewVector3(2.0, 2.0, 2.0)
 	player.scale = 2.5
 	player.movementSpeed = 0.1
