@@ -44,6 +44,7 @@ func server() {
 // serverPacketHandler validates user and appends user information
 func serverPacketHandler(conn *shared.DualConnection) {
 	// Block until connection is setup
+	// Have some verifiction before proceeding	// i.e. check if username is in use
 	connected := false
 	for !connected {
 		select {
@@ -110,13 +111,15 @@ func serverPacketHandler(conn *shared.DualConnection) {
 		}
 	}
 
+	// user packet handler
 	for {
 		player, ok := AllConnections[conn]
 		if !ok {
 			return
 		}
 
-		for {
+		isConn := true
+		for isConn {
 			select {
 			case r := <-conn.DataReadChan:
 				log.Printf("%T", r)
@@ -145,8 +148,13 @@ func serverPacketHandler(conn *shared.DualConnection) {
 					conn.DataWriteChan <- &shared.A2APingPacket{Reliability: shared.Reliable}
 
 				}
+
+			case <-conn.DataErrChan:
+				isConn = false
 			}
 		}
+		removeConn(conn)
+		break
 	}
 }
 
@@ -166,6 +174,26 @@ func serverUpdates() {
 			}
 		}
 	}()
+}
+
+func removeConn(conn *shared.DualConnection) {
+	username := AllConnections[conn].Username
+	delete(AllConnections, conn)
+	delete(userCoordsMap, username)
+	log.Println(red(" User disonnected "))
+	if err := conn.Close(); err != nil {
+		log.Println(err)
+	}
+
+	for userConn := range AllConnections {
+		// Inform all users of user disconnect
+		userConn.DataWriteChan <- &shared.S2CChatMessagePacket{
+			Username: username,
+			Type:     shared.UserDisconnect,
+			Time:     time.Now(),
+			Message:  "",
+		}
+	}
 }
 
 var totalIDs uint32

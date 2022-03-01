@@ -5,6 +5,7 @@ import (
 
 	"github.com/Antriko/go-network/client"
 	"github.com/Antriko/go-network/server"
+	"github.com/Antriko/go-network/world"
 )
 
 func main() {
@@ -14,5 +15,7 @@ func main() {
 		client.Start()
 	case "server":
 		server.Start()
+	case "map":
+		world.Freecam()
 	}
 }
