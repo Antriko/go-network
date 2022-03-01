@@ -117,7 +117,7 @@ func (world *worldStruct) meshGen() {
 	rl.UnloadImage(tex)
 
 	// Shader
-	tileShader := rl.LoadShader("world/glsl330/basic.vs", "world/glsl330/basic.fs")
+	tileShader := rl.LoadShader("world/glsl330/tileShader.vs", "world/glsl330/tileShader.fs")
 	tileShader.UpdateLocation(rl.LocMatrixMvp, rl.GetShaderLocation(tileShader, "mvp"))
 	tileShader.UpdateLocation(rl.LocMatrixModel, rl.GetShaderLocationAttrib(tileShader, "instanceTransform"))
 	tileModel.Materials.Shader = tileShader
