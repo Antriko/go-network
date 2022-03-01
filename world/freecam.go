@@ -3,7 +3,6 @@ package world
 import (
 	"fmt"
 	"image/color"
-	"log"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -24,8 +23,8 @@ func Freecam() {
 	rl.SetTargetFPS(60)
 	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
 
-	world = createWorld(4)
-	worldOption = worldOptionStruct{5, 5}
+	world = createWorld(5)
+	worldOption = worldOptionStruct{1, 1}
 	meshGen()
 
 	pos := rl.NewVector3(10, 20, 10)
@@ -106,7 +105,7 @@ func meshGen() {
 	// Shader returns the colour of mesh depending on height level
 
 	instances = len(world) * len(world)
-	translations = make([]rl.Matrix, instances) // Locations of instances
+	translations = make([]rl.Matrix, instances) // Locations of instances;
 
 	// Create basic cube mesh
 	tileMesh = rl.LoadModelFromMesh(rl.GenMeshCube(worldOption.tileSpacing, worldOption.tileHeight, worldOption.tileSpacing))
@@ -114,6 +113,13 @@ func meshGen() {
 	texture := rl.LoadTextureFromImage(tex)
 	rl.SetMaterialTexture(tileMesh.Materials, rl.MapDiffuse, texture)
 	rl.UnloadImage(tex)
+
+	// Shader
+	shader := rl.LoadShader("world/glsl330/basic.vs", "world/glsl330/basic.fs")
+	shader.UpdateLocation(rl.LocMatrixMvp, rl.GetShaderLocation(shader, "mvp"))
+	shader.UpdateLocation(rl.LocMatrixModel, rl.GetShaderLocationAttrib(shader, "instanceTransform"))
+	tileMesh.Materials.Shader = shader
+	// rl.transform
 
 	// Assign location for all cubes to create map
 	width := float32(len(world))
@@ -129,8 +135,11 @@ func meshGen() {
 			pos := rl.NewVector3(xPos, height, yPos)
 
 			index := y*int(width) + x
-			translations[index] = rl.MatrixTranslate(pos.X, pos.Y, pos.Z)
-			log.Println(index, translations[index])
+			mat := rl.MatrixTranslate(pos.X, pos.Y, pos.Z)
+			translations[index] = mat
+			translations[index] = rl.MatrixMultiply(translations[index], rl.MatrixTranslate(0, 0, 0))
+
+			// log.Println(index, instances, rl.Vector3Transform(rl.NewVector3(0, 0, 0), translations[index]).Y)
 		}
 	}
 }
