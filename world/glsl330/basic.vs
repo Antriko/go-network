@@ -14,7 +14,7 @@ uniform mat4 mvp;
 // Output vertex attributes (to fragment shader)
 out vec3 fragPosition;
 out vec2 fragTexCoord;
-out mat4 instance;
+out vec3 instance;
 
 
 // NOTE: Add here your custom variables
@@ -27,7 +27,7 @@ void main()
     // Send vertex attributes to fragment shader
     fragPosition = vertexPosition;
     fragTexCoord = vertexTexCoord;
-    instance = instanceTransform;
+    instance = vec3(mvp*instanceTransform);
 
     // Calculate final vertex position
     gl_Position = mvpi*vec4(vertexPosition, 1);
