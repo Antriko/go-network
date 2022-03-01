@@ -39,7 +39,7 @@ void main()
             col = vec4(0, 0, 1, 1);
         }
 
-        col = vec4(model_matrix, 1);
+        // col = vec4(model_matrix, 1);
     }
     finalColor = col;
 }
