@@ -7,13 +7,14 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var world [][]mapTile
+var world *worldStruct = createWorld(50)
 var cam rl.Camera
 var mapMatrix rl.Matrix
 
 type worldOptionStruct struct {
 	tileHeight  float32
 	tileSpacing float32
+	heightMulti float32
 }
 
 var worldOption worldOptionStruct
@@ -23,8 +24,7 @@ func Freecam() {
 	rl.SetTargetFPS(60)
 	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
 
-	world = createWorld(5)
-	worldOption = worldOptionStruct{1, 1}
+	worldOption = worldOptionStruct{5, 5, 2}
 	meshGen()
 
 	pos := rl.NewVector3(10, 20, 10)
@@ -47,7 +47,7 @@ func Freecam() {
 
 		rl.DrawGrid(20, 5)
 		// renderWorld(world)
-		renderMesh(world)
+		world.renderMesh()
 
 		rl.EndMode3D()
 		debugging()
@@ -84,10 +84,10 @@ func renderWorld(world [][]mapTile) {
 			}
 
 			height := float32(world[y][x].noise) * worldOption.tileHeight
-			if height < 0.3*worldOption.tileHeight {
+			if height < 0.3 {
 				height = 0.3
 			}
-			pos := rl.NewVector3(xPos, height, yPos)
+			pos := rl.NewVector3(xPos, height*worldOption.tileHeight, yPos)
 			rl.DrawCube(pos, spacing, worldOption.tileHeight, spacing, col)
 			rl.DrawCubeWires(pos, spacing, worldOption.tileHeight, spacing, rl.Black)
 		}
@@ -104,7 +104,7 @@ func meshGen() {
 	// All are combined into one model
 	// Shader returns the colour of mesh depending on height level
 
-	instances = len(world) * len(world)
+	instances = len(world.tiles) * len(world.tiles)
 	translations = make([]rl.Matrix, instances) // Locations of instances;
 
 	// Create basic cube mesh
@@ -122,17 +122,17 @@ func meshGen() {
 	// rl.transform
 
 	// Assign location for all cubes to create map
-	width := float32(len(world))
-	length := float32(len(world[0]))
-	for y := range world {
-		for x := range world[y] {
+	width := float32(len(world.tiles))
+	length := width
+	for y := range world.tiles {
+		for x := range world.tiles[y] {
 			xPos := (float32(x) - (width / 2)) * worldOption.tileSpacing
 			yPos := (float32(y) - (length / 2)) * worldOption.tileSpacing
-			height := float32(world[y][x].noise) * worldOption.tileHeight
+			height := float32(world.tiles[y][x].noise) * worldOption.tileHeight
 			if height < 0.3*worldOption.tileHeight {
 				height = 0.3
 			}
-			pos := rl.NewVector3(xPos, height, yPos)
+			pos := rl.NewVector3(xPos, height*worldOption.heightMulti, yPos)
 
 			index := y*int(width) + x
 			mat := rl.MatrixTranslate(pos.X, pos.Y, pos.Z)
@@ -144,7 +144,7 @@ func meshGen() {
 	}
 }
 
-func renderMesh(world [][]mapTile) {
+func (world *worldStruct) renderMesh() {
 
 	// rl.DrawMesh(*tileMesh.Meshes, *tileMesh.Materials, rl.MatrixIdentity())
 	rl.DrawMeshInstanced(*tileMesh.Meshes, *tileMesh.Materials, translations, instances)
