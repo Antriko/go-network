@@ -3,7 +3,7 @@
 // Input vertex attributes (from vertex shader)
 in vec3 fragPosition;
 in vec2 fragTexCoord;
-in vec3 instance;
+in mat4 instance;
 
 // Input uniform values
 uniform sampler2D texture0;
@@ -13,29 +13,44 @@ uniform vec2 u_mouse;
 // Output fragment color
 out vec4 finalColor;
 
-vec4 col;
+vec4 col;   // rgb dec / 255, a 1
 float threshold = 0.025;
-float tileSize = 5.0;
-vec3 meshPos;
+float tileSize = 5.0 * 2.0; // tileSize * tileSpacing
+vec4 meshPos;
+float meshY;
+
+// Change colour depending on Y level
+vec4 minCol;
+vec4 maxCol;
+vec4 diffCol;
 
 void main()
 {
-    meshPos = vec3(instance);
+    meshPos = instance * vec4(0, 0, 0, 1);
+    meshY = meshPos.y;
+
+    minCol = vec4(0.373, 0.388, 0.267, 1);
+    maxCol = vec4(0.255, 0.271, 0.184, 1);
+    // bigger value - smaller value
+    diffCol = vec4(minCol.x - maxCol.x, minCol.y - maxCol.y, minCol.z - maxCol.z, 1);
 
     // Outline
     if (fragTexCoord.y < threshold || fragTexCoord.y > 1 - threshold || fragTexCoord.x < threshold || fragTexCoord.x > 1 - threshold) {
         col = vec4(0, 0, 0, 1);
     } else {
-
-        if (meshPos.y <= 0.3) {
-            col = vec4(1, 0, 0, 1);
-        } else if (meshPos.y < 0.6) {
-            col = vec4(0, 1, 0, 1);
-        } else {
-            col = vec4(0, 0, 1, 1);
+        if (meshY <= 0.3*tileSize) {
+            col = vec4(0, 0.639, 0.8, 1);
+        } 
+        else {
+            col = vec4(minCol.x - (diffCol.x*(meshY/10)), minCol.y - (diffCol.y*(meshY/10)), minCol.z - (diffCol.z*(meshY/10)), 1);
+            // col = vec4(diffCol.x*meshY, diffCol.y*meshY, diffCol.z*meshY, 1);
+            // col = vec4(0.373, 0.388, 0.267, meshY/10);
         }
-
-        // col = vec4(model_matrix, 1);
+        // else if (meshY < 0.6*tileSize) {
+        //     col = vec4(0.373, 0.388, 0.267, 1);
+        // } else {
+        //     col = vec4(0.255, 0.271, 0.184, 1);
+        // }
     }
     finalColor = col;
 }
