@@ -12,7 +12,6 @@ in mat4 instanceTransform;
 uniform mat4 mvp;
 
 // Output vertex attributes (to fragment shader)
-out vec3 fragPosition;
 out vec2 fragTexCoord;
 out mat4 instance;
 
@@ -25,7 +24,6 @@ void main()
     mat4 mvpi = mvp*instanceTransform;
     
     // Send vertex attributes to fragment shader
-    fragPosition = vertexPosition;
     fragTexCoord = vertexTexCoord;
     instance = instanceTransform;
 

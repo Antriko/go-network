@@ -9,7 +9,6 @@ import (
 
 var world *worldStruct = createWorld(25)
 var cam rl.Camera
-var mapMatrix rl.Matrix
 
 type worldOptionStruct struct {
 	tileSize    float32
@@ -181,9 +180,10 @@ func (world *worldStruct) renderMesh() {
 	rl.DrawMeshInstanced(*tileModel.Meshes, *tileModel.Materials, tileTranslations, tileInstances)
 	for _, u := range treeTranslations {
 		// log.Println(rl.Vector3Transform(rl.NewVector3(0, 0, 0), u))
-		rl.DrawModel(treeModel, rl.Vector3Transform(rl.NewVector3(0, 0, 0), u), worldOption.tileSize, rl.White)
+		rl.DrawModel(treeModel, rl.Vector3Transform(rl.NewVector3(0, 0, 0), u), worldOption.tileSize*0.75, rl.White)
 	}
-	rl.DrawMeshInstanced(*treeModel.Meshes, *treeModel.Materials, treeTranslations, treeInstances)
+	// rl.DrawMeshInstanced(*treeModel.Meshes, *treeModel.Materials, treeTranslations, treeInstances)
+	// rl.DrawModel(treeModel, rl.NewVector3(0, 50, 0), 1, rl.White)
 }
 
 func debugging() {

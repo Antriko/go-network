@@ -2,7 +2,6 @@
 
 // Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
-in vec4 fragColor;
 
 // Input uniform values
 uniform sampler2D texture0;
