@@ -19,6 +19,7 @@ func createWorld(size int) *worldStruct {
 	// Create empty world
 	world := &worldStruct{
 		worldGen(size),
+		size,
 	}
 
 	// Add objects
@@ -43,6 +44,7 @@ type mapTile struct {
 }
 type worldStruct struct {
 	tiles [][]mapTile
+	size  int
 }
 
 var mapBlue = color.New(color.FgBlack, color.BgLightBlue).Render
@@ -224,14 +226,17 @@ func (world *worldStruct) populateWorld() {
 
 func (world *worldStruct) populateTrees() {
 	rand.Seed(time.Now().UnixNano())
-	randomNoise := noiseGen(len(world.tiles), len(world.tiles))
+	randomNoise := noiseGen(world.size, world.size)
+	treeCount := 0
 	for y := range world.tiles {
 		for x := range world.tiles[y] {
 			if world.tiles[y][x].noise > thresholdWater {
+				if world.tiles[y][x].tile == tree {
+					treeCount++
+				}
 				randomNum := rand.Intn(100)
 				if randomNum <= 10 { // % threshold
 					if randomNoise[y][x].noise > 0.1 {
-
 						// check around to see if obstructed by water
 						// O O O
 						// O X O
@@ -244,7 +249,7 @@ func (world *worldStruct) populateTrees() {
 						for diaX := 0; diaX <= diameter; diaX++ {
 							for diaY := 0; diaY <= diameter; diaY++ {
 
-								if -radius+y+diaY < 0 || -radius+y+diaY > len(world.tiles)-1 || -radius+x+diaX < 0 || -radius+x+diaX > len(world.tiles)-1 {
+								if -radius+y+diaY < 0 || -radius+y+diaY > world.size-1 || -radius+x+diaX < 0 || -radius+x+diaX > world.size-1 {
 									continue
 								}
 								if world.tiles[-radius+y+diaY][-radius+x+diaX].noise < thresholdWater {
@@ -253,6 +258,7 @@ func (world *worldStruct) populateTrees() {
 							}
 						}
 						if canSpawn {
+							treeCount++
 							world.tiles[y][x].tile = tree
 						}
 					}
@@ -260,5 +266,10 @@ func (world *worldStruct) populateTrees() {
 			}
 		}
 	}
+	// Allows for at least 75% of world.size of trees to be populated
 	world.printWorld()
+	log.Println(treeCount, math.Round(float64(world.size)*0.75))
+	if treeCount < int(math.Round(float64(world.size)*0.75)) {
+		world.populateTrees()
+	}
 }

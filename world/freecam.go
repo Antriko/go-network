@@ -54,12 +54,14 @@ func Freecam() {
 	rl.CloseWindow()
 }
 
-func renderWorld(world [][]mapTile) {
+// Not efficiently rendered - deprecated
+// Ignores shader rending
+func (world *worldStruct) renderWorld() {
 	spacing := float32(5.0)
-	width := float32(len(world))
-	length := float32(len(world[0]))
-	for y := range world {
-		for x := range world[y] {
+	width := float32(world.size)
+	length := width
+	for y := range world.tiles {
+		for x := range world.tiles[y] {
 
 			xPos := (float32(x) - (width / 2)) * worldOption.tileSpacing
 			yPos := (float32(y) - (length / 2)) * worldOption.tileSpacing
@@ -71,17 +73,17 @@ func renderWorld(world [][]mapTile) {
 			// 	col = rl.NewColor(0, 77, 37, 255)
 			// }
 
-			if world[y][x].noise < 0.15 {
+			if world.tiles[y][x].noise < 0.15 {
 				col = rl.NewColor(0, 45, 57, 255)
-			} else if world[y][x].noise < 0.3 {
+			} else if world.tiles[y][x].noise < 0.3 {
 				col = rl.NewColor(0, 163, 204, 255)
-			} else if world[y][x].noise < 0.6 {
+			} else if world.tiles[y][x].noise < 0.6 {
 				col = rl.NewColor(95, 99, 68, 255)
 			} else {
 				col = rl.NewColor(65, 69, 47, 255)
 			}
 
-			height := float32(world[y][x].noise) * worldOption.tileSize
+			height := float32(world.tiles[y][x].noise) * worldOption.tileSize
 			if height < 0.3 {
 				height = 0.3
 			}
@@ -106,7 +108,7 @@ func (world *worldStruct) meshGen() {
 	// to save compute time from initialising the model over and over
 	// Shader returns the colour of mesh depending on height level
 
-	tileInstances = len(world.tiles) * len(world.tiles)
+	tileInstances = world.size * world.size
 	tileTranslations = make([]rl.Matrix, tileInstances) // Locations of instances;
 
 	// Create basic cube mesh
@@ -123,7 +125,7 @@ func (world *worldStruct) meshGen() {
 	tileModel.Materials.Shader = tileShader
 
 	// Assign location for all cubes to create map
-	width := float32(len(world.tiles))
+	width := float32(world.size)
 	length := width
 	for y := range world.tiles {
 		for x := range world.tiles[y] {
@@ -141,12 +143,47 @@ func (world *worldStruct) meshGen() {
 			tileTranslations[index] = rl.MatrixMultiply(tileTranslations[index], rl.MatrixTranslate(0, 0, 0))
 
 			// log.Println(index, instances, rl.Vector3Transform(rl.NewVector3(0, 0, 0), translations[index]).Y)
+
+			// Get total amount of trees to get amount of instances needed
+			if world.tiles[y][x].tile == tree {
+				treeInstances++
+			}
 		}
 	}
+
+	// Tree model and shader init
+	treeModel = rl.LoadModel("models/world/Tree.glb")
+	treeShader := rl.LoadShader("world/glsl330/treeShader.vs", "world/glsl330/treeShader.fs")
+	treeShader.UpdateLocation(rl.LocMatrixMvp, rl.GetShaderLocation(treeShader, "mvp"))
+	treeShader.UpdateLocation(rl.LocMatrixModel, rl.GetShaderLocationAttrib(treeShader, "instanceTransform"))
+	treeModel.Materials.Shader = treeShader
+	// treeModel.Transform = rl.MatrixScale(worldOption.tileSize, worldOption.tileSize, worldOption.tileSize)
+	treeTranslations = make([]rl.Matrix, treeInstances)
+	tmpIndex := 0
+	for y := range world.tiles {
+		for x := range world.tiles[y] {
+			if world.tiles[y][x].tile == tree {
+				xPos := (float32(x) - (width / 2)) * worldOption.tileSpacing
+				yPos := (float32(y) - (length / 2)) * worldOption.tileSpacing
+				height := float32(world.tiles[y][x].noise)*worldOption.tileSize - 1
+				pos := rl.NewVector3(xPos, height*worldOption.heightMulti, yPos)
+				mat := rl.MatrixTranslate(pos.X, pos.Y, pos.Z)
+				treeTranslations[tmpIndex] = mat
+				treeTranslations[tmpIndex] = rl.MatrixMultiply(treeTranslations[tmpIndex], rl.MatrixTranslate(0, 0, 0))
+				tmpIndex++
+			}
+		}
+	}
+
 }
 
 func (world *worldStruct) renderMesh() {
 	rl.DrawMeshInstanced(*tileModel.Meshes, *tileModel.Materials, tileTranslations, tileInstances)
+	for _, u := range treeTranslations {
+		// log.Println(rl.Vector3Transform(rl.NewVector3(0, 0, 0), u))
+		rl.DrawModel(treeModel, rl.Vector3Transform(rl.NewVector3(0, 0, 0), u), worldOption.tileSize, rl.White)
+	}
+	rl.DrawMeshInstanced(*treeModel.Meshes, *treeModel.Materials, treeTranslations, treeInstances)
 }
 
 func debugging() {

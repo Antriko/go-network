@@ -43,14 +43,8 @@ void main()
         } 
         else {
             col = vec4(minCol.x - (diffCol.x*(meshY/10)), minCol.y - (diffCol.y*(meshY/10)), minCol.z - (diffCol.z*(meshY/10)), 1);
-            // col = vec4(diffCol.x*meshY, diffCol.y*meshY, diffCol.z*meshY, 1);
-            // col = vec4(0.373, 0.388, 0.267, meshY/10);
         }
-        // else if (meshY < 0.6*tileSize) {
-        //     col = vec4(0.373, 0.388, 0.267, 1);
-        // } else {
-        //     col = vec4(0.255, 0.271, 0.184, 1);
-        // }
+
     }
     finalColor = col;
 }
