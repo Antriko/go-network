@@ -152,6 +152,7 @@ func renderChat() {
 }
 
 // Gets Y pos of tile that player is in
+// TODO - 3x3 collision instead of returning y value of noise?
 func getYCollision(pos rl.Vector3) float32 {
 
 	offset := float32(0)

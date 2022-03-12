@@ -245,7 +245,8 @@ func (player *playerInfo) renderPlayer() {
 	rl.DrawModel(player.model.body.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.bottom.model, player.pos, player.scale, rl.White)
 
-	rl.DrawCube(player.pos, 1, 100, 1, rl.Red)
+	boxHeight := player.size.Y * player.size.Z
+	rl.DrawCubeWires(rl.NewVector3(player.pos.X, player.pos.Y+(boxHeight/2), player.pos.Z), player.size.X, boxHeight, player.size.Z, rl.Red)
 }
 func (player *playerInfo) renderPlayerTag() {
 	tagOffset := 6
