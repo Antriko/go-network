@@ -10,20 +10,20 @@ import (
 var world *WorldStruct
 var cam rl.Camera
 
-type worldOptionStruct struct {
-	tileSize    float32
-	tileSpacing float32
-	heightMulti float32
+type WorldOptionStruct struct {
+	TileSize    float32
+	TileSpacing float32
+	HeightMulti float32
 }
 
-var worldOption worldOptionStruct
+var WorldOption WorldOptionStruct
 
 func Freecam() {
 	rl.InitWindow(1280, 720, "Freecam")
 	rl.SetTargetFPS(60)
 	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
 
-	worldOption = worldOptionStruct{5, 5, 2}
+	WorldOption = WorldOptionStruct{5, 5, 2}
 	world = createWorld(25)
 	world.meshGen()
 
@@ -44,7 +44,7 @@ func Freecam() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
 		rl.BeginMode3D(cam)
-		rl.DrawGrid(10, worldOption.tileSpacing)
+		rl.DrawGrid(10, WorldOption.TileSpacing)
 		world.renderMesh()
 
 		rl.EndMode3D()
@@ -63,8 +63,8 @@ func (world *WorldStruct) renderWorld() {
 	for y := range world.Tiles {
 		for x := range world.Tiles[y] {
 
-			xPos := (float32(x) - (width / 2)) * worldOption.tileSpacing
-			yPos := (float32(y) - (length / 2)) * worldOption.tileSpacing
+			xPos := (float32(x) - (width / 2)) * WorldOption.TileSpacing
+			yPos := (float32(y) - (length / 2)) * WorldOption.TileSpacing
 
 			var col color.RGBA
 			// if (x+y)%2 == 0 {
@@ -83,13 +83,13 @@ func (world *WorldStruct) renderWorld() {
 				col = rl.NewColor(65, 69, 47, 255)
 			}
 
-			height := float32(world.Tiles[y][x].Noise) * worldOption.tileSize
+			height := float32(world.Tiles[y][x].Noise) * WorldOption.TileSize
 			if height < 0.3 {
 				height = 0.3
 			}
-			pos := rl.NewVector3(xPos, height*worldOption.tileSize, yPos)
-			rl.DrawCube(pos, spacing, worldOption.tileSize, spacing, col)
-			rl.DrawCubeWires(pos, spacing, worldOption.tileSize, spacing, rl.Black)
+			pos := rl.NewVector3(xPos, height*WorldOption.TileSize, yPos)
+			rl.DrawCube(pos, spacing, WorldOption.TileSize, spacing, col)
+			rl.DrawCubeWires(pos, spacing, WorldOption.TileSize, spacing, rl.Black)
 		}
 	}
 }
@@ -112,7 +112,7 @@ func (world *WorldStruct) meshGen() {
 	tileTranslations = make([]rl.Matrix, tileInstances) // Locations of instances;
 
 	// Create basic cube mesh
-	tileModel = rl.LoadModelFromMesh(rl.GenMeshCube(worldOption.tileSpacing, worldOption.tileSize, worldOption.tileSpacing))
+	tileModel = rl.LoadModelFromMesh(rl.GenMeshCube(WorldOption.TileSpacing, WorldOption.TileSize, WorldOption.TileSpacing))
 	tex := rl.GenImageChecked(2, 2, 1, 1, rl.Red, rl.Green)
 	texture := rl.LoadTextureFromImage(tex)
 	rl.SetMaterialTexture(tileModel.Materials, rl.MapDiffuse, texture)
@@ -129,13 +129,13 @@ func (world *WorldStruct) meshGen() {
 	length := width
 	for y := range world.Tiles {
 		for x := range world.Tiles[y] {
-			xPos := (float32(x) - (width / 2)) * worldOption.tileSpacing
-			yPos := (float32(y) - (length / 2)) * worldOption.tileSpacing
-			height := float32(world.Tiles[y][x].Noise) * worldOption.tileSize
-			if height < 0.3*worldOption.tileSize {
+			xPos := (float32(x) - (width / 2)) * WorldOption.TileSpacing
+			yPos := (float32(y) - (length / 2)) * WorldOption.TileSpacing
+			height := float32(world.Tiles[y][x].Noise) * WorldOption.TileSize
+			if height < 0.3*WorldOption.TileSize {
 				height = 0.3
 			}
-			pos := rl.NewVector3(xPos, height*worldOption.heightMulti, yPos)
+			pos := rl.NewVector3(xPos, height*WorldOption.HeightMulti, yPos)
 
 			index := y*int(width) + x
 			mat := rl.MatrixTranslate(pos.X, pos.Y, pos.Z)
@@ -157,16 +157,16 @@ func (world *WorldStruct) meshGen() {
 	treeShader.UpdateLocation(rl.LocMatrixMvp, rl.GetShaderLocation(treeShader, "mvp"))
 	treeShader.UpdateLocation(rl.LocMatrixModel, rl.GetShaderLocationAttrib(treeShader, "instanceTransform"))
 	treeModel.Materials.Shader = treeShader
-	// treeModel.Transform = rl.MatrixScale(worldOption.tileSize, worldOption.tileSize, worldOption.tileSize)
+	// treeModel.Transform = rl.MatrixScale(WorldOption.TileSize, WorldOption.TileSize, WorldOption.TileSize)
 	treeTranslations = make([]rl.Matrix, treeInstances)
 	tmpIndex := 0
 	for y := range world.Tiles {
 		for x := range world.Tiles[y] {
 			if world.Tiles[y][x].Tile == tree {
-				xPos := (float32(x) - (width / 2)) * worldOption.tileSpacing
-				yPos := (float32(y) - (length / 2)) * worldOption.tileSpacing
-				height := float32(world.Tiles[y][x].Noise)*worldOption.tileSize - 1
-				pos := rl.NewVector3(xPos, height*worldOption.heightMulti, yPos)
+				xPos := (float32(x) - (width / 2)) * WorldOption.TileSpacing
+				yPos := (float32(y) - (length / 2)) * WorldOption.TileSpacing
+				height := float32(world.Tiles[y][x].Noise)*WorldOption.TileSize - 1
+				pos := rl.NewVector3(xPos, height*WorldOption.HeightMulti, yPos)
 				mat := rl.MatrixTranslate(pos.X, pos.Y, pos.Z)
 				treeTranslations[tmpIndex] = mat
 				treeTranslations[tmpIndex] = rl.MatrixMultiply(treeTranslations[tmpIndex], rl.MatrixTranslate(0, 0, 0))
@@ -181,7 +181,7 @@ func (world *WorldStruct) renderMesh() {
 	rl.DrawMeshInstanced(*tileModel.Meshes, *tileModel.Materials, tileTranslations, tileInstances)
 	for _, u := range treeTranslations {
 		// log.Println(rl.Vector3Transform(rl.NewVector3(0, 0, 0), u))
-		rl.DrawModel(treeModel, rl.Vector3Transform(rl.NewVector3(0, 0, 0), u), worldOption.tileSize*0.75, rl.White)
+		rl.DrawModel(treeModel, rl.Vector3Transform(rl.NewVector3(0, 0, 0), u), WorldOption.TileSize*0.75, rl.White)
 	}
 	// rl.DrawMeshInstanced(*treeModel.Meshes, *treeModel.Materials, treeTranslations, treeInstances)
 	// rl.DrawModel(treeModel, rl.NewVector3(0, 50, 0), 1, rl.White)

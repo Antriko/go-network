@@ -20,7 +20,9 @@ var camera = NewCustomCamera(10.0, 3.0, 100.0)
 var models = make(map[string]map[string]modelEntity)
 var arrayOfModels = make(map[string][]modelEntity)
 var users = make(map[string]shared.OtherPlayer)
+
 var worldMap *world.WorldStruct
+var worldOption world.WorldOptionStruct
 
 // TODO move camera to game/player struct instead of global
 
