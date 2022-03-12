@@ -12,13 +12,13 @@ import (
 	noise "github.com/ojrac/opensimplex-go"
 )
 
-func createWorld(size int) *worldStruct {
+func createWorld(size int) *WorldStruct {
 	log.SetFlags(log.Lshortfile)
 	log.Println(mapGreen(" - WORLD GEN - "))
 
 	// Create empty world
-	world := &worldStruct{
-		worldGen(size),
+	world := &WorldStruct{
+		WorldGen(size),
 		size,
 	}
 
@@ -39,12 +39,12 @@ const (
 )
 
 type mapTile struct {
-	noise float64
-	tile  tileType
+	Noise float64
+	Tile  tileType
 }
-type worldStruct struct {
-	tiles [][]mapTile
-	size  int
+type WorldStruct struct {
+	Tiles [][]mapTile
+	Size  int
 }
 
 var mapBlue = color.New(color.FgBlack, color.BgLightBlue).Render
@@ -55,7 +55,7 @@ var mapBrown = color.New(color.FgBlack, color.BgDarkGray).Render
 
 // Keep size odd so gradients work better
 // personal note; 91 max for own console width
-func worldGen(size int) [][]mapTile {
+func WorldGen(size int) [][]mapTile {
 
 	width, height := size, size
 	rand.Seed(time.Now().UnixNano())
@@ -67,7 +67,7 @@ func worldGen(size int) [][]mapTile {
 	if !checkValid(size, 0.3, 0.6, worldGenerated) {
 		// recursion, attempt to create new world
 		log.Println(mapRed(" WORLD NOT VALID - GEN NEW WORLD "))
-		worldGenerated = worldGen(size)
+		worldGenerated = WorldGen(size)
 	}
 	return worldGenerated
 }
@@ -76,11 +76,11 @@ func printNoise(noise [][]mapTile) {
 	fmt.Println()
 	for y := range noise {
 		for x := range noise[y] {
-			hex := strconv.FormatInt(int64(math.Round(noise[y][x].noise*10)), 16)
+			hex := strconv.FormatInt(int64(math.Round(noise[y][x].Noise*10)), 16)
 
-			if noise[y][x].noise < thresholdWater {
+			if noise[y][x].Noise < thresholdWater {
 				fmt.Printf(mapBlue(" %v "), hex)
-			} else if noise[y][x].noise < thresholdLand {
+			} else if noise[y][x].Noise < thresholdLand {
 				// tmp := math.Round(noise[y][x] * 100)
 				fmt.Printf(mapGreen(" %v "), hex)
 			} else {
@@ -96,9 +96,9 @@ func printEmpty(noise [][]mapTile) {
 	fmt.Println()
 	for y := range noise {
 		for x := range noise[y] {
-			if noise[y][x].noise < thresholdWater {
+			if noise[y][x].Noise < thresholdWater {
 				fmt.Printf(mapBlue("   "))
-			} else if noise[y][x].noise < thresholdLand {
+			} else if noise[y][x].Noise < thresholdLand {
 				// tmp := math.Round(noise[y][x] * 100)
 				fmt.Printf(mapGreen("   "))
 			} else {
@@ -115,29 +115,29 @@ func printTile(tile [][]mapTile) {
 	for y := range tile {
 		for x := range tile[y] {
 
-			if tile[y][x].tile == tree {
-				fmt.Printf(mapBrown(" %d "), tile[y][x].tile)
-			} else if tile[y][x].noise < thresholdWater {
-				fmt.Printf(mapBlue(" %d "), tile[y][x].tile)
-			} else if tile[y][x].noise < thresholdLand {
+			if tile[y][x].Tile == tree {
+				fmt.Printf(mapBrown(" %d "), tile[y][x].Tile)
+			} else if tile[y][x].Noise < thresholdWater {
+				fmt.Printf(mapBlue(" %d "), tile[y][x].Tile)
+			} else if tile[y][x].Noise < thresholdLand {
 				// tmp := math.Round(noise[y][x] * 100)
-				fmt.Printf(mapGreen(" %d "), tile[y][x].tile)
+				fmt.Printf(mapGreen(" %d "), tile[y][x].Tile)
 			} else {
-				fmt.Printf(mapDarkGreen(" %d "), tile[y][x].tile)
+				fmt.Printf(mapDarkGreen(" %d "), tile[y][x].Tile)
 			}
 		}
 		fmt.Println()
 	}
 	fmt.Println()
 }
-func (world *worldStruct) printWorld() {
-	printTile(world.tiles)
+func (world *WorldStruct) printWorld() {
+	printTile(world.Tiles)
 }
-func (world *worldStruct) printNoise() {
-	printNoise(world.tiles)
+func (world *WorldStruct) printNoise() {
+	printNoise(world.Tiles)
 }
-func (world *worldStruct) printEmpty() {
-	printEmpty(world.tiles)
+func (world *WorldStruct) printEmpty() {
+	printEmpty(world.Tiles)
 }
 
 func noiseGen(width int, height int) [][]mapTile {
@@ -154,7 +154,7 @@ func noiseGen(width int, height int) [][]mapTile {
 		for x := 0; x < width; x++ {
 			xFloat := float64(x) / float64(width)
 			yFloat := float64(y) / float64(height)
-			noiseWorld[y][x].noise = noiseInst.Eval2(xFloat, yFloat)
+			noiseWorld[y][x].Noise = noiseInst.Eval2(xFloat, yFloat)
 		}
 	}
 	return noiseWorld
@@ -166,13 +166,13 @@ func combineNoise(width int, height int, noise1 [][]mapTile, noise2 [][]mapTile)
 	for y := range noise1 {
 		for x := range noise1[y] {
 			// Make combination not as strong
-			grad := noise1[y][x].noise - (noise2[y][x].noise / 1.5)
+			grad := noise1[y][x].Noise - (noise2[y][x].Noise / 1.5)
 			if grad < 0 {
 				grad = 0
 			} else if grad > 1 {
 				grad = 1
 			}
-			noise1[y][x].noise = grad
+			noise1[y][x].Noise = grad
 		}
 	}
 	return noise1
@@ -195,7 +195,7 @@ func mergeCircleNoise(width int, height int, noise [][]mapTile) [][]mapTile {
 
 			// Add them both together to get a circle gradient
 			div := 2.0 // default 2; more = less strong
-			circle[y][x].noise = (xGrad / div) + (yGrad / div)
+			circle[y][x].Noise = (xGrad / div) + (yGrad / div)
 		}
 	}
 
@@ -208,7 +208,7 @@ func checkValid(size int, threshold float64, percent float32, noise [][]mapTile)
 	total := 0.0
 	for y := range noise {
 		for x := range noise[y] {
-			if noise[y][x].noise > threshold {
+			if noise[y][x].Noise > threshold {
 				total++
 			}
 		}
@@ -220,23 +220,23 @@ func checkValid(size int, threshold float64, percent float32, noise [][]mapTile)
 	return true
 }
 
-func (world *worldStruct) populateWorld() {
+func (world *WorldStruct) populateWorld() {
 	world.populateTrees()
 }
 
-func (world *worldStruct) populateTrees() {
+func (world *WorldStruct) populateTrees() {
 	rand.Seed(time.Now().UnixNano())
-	randomNoise := noiseGen(world.size, world.size)
+	randomNoise := noiseGen(world.Size, world.Size)
 	treeCount := 0
-	for y := range world.tiles {
-		for x := range world.tiles[y] {
-			if world.tiles[y][x].noise > thresholdWater {
-				if world.tiles[y][x].tile == tree {
+	for y := range world.Tiles {
+		for x := range world.Tiles[y] {
+			if world.Tiles[y][x].Noise > thresholdWater {
+				if world.Tiles[y][x].Tile == tree {
 					treeCount++
 				}
 				randomNum := rand.Intn(100)
 				if randomNum <= 10 { // % threshold
-					if randomNoise[y][x].noise > 0.1 {
+					if randomNoise[y][x].Noise > 0.1 {
 						// check around to see if obstructed by water
 						// O O O
 						// O X O
@@ -249,27 +249,27 @@ func (world *worldStruct) populateTrees() {
 						for diaX := 0; diaX <= diameter; diaX++ {
 							for diaY := 0; diaY <= diameter; diaY++ {
 
-								if -radius+y+diaY < 0 || -radius+y+diaY > world.size-1 || -radius+x+diaX < 0 || -radius+x+diaX > world.size-1 {
+								if -radius+y+diaY < 0 || -radius+y+diaY > world.Size-1 || -radius+x+diaX < 0 || -radius+x+diaX > world.Size-1 {
 									continue
 								}
-								if world.tiles[-radius+y+diaY][-radius+x+diaX].noise < thresholdWater {
+								if world.Tiles[-radius+y+diaY][-radius+x+diaX].Noise < thresholdWater {
 									canSpawn = false
 								}
 							}
 						}
 						if canSpawn {
 							treeCount++
-							world.tiles[y][x].tile = tree
+							world.Tiles[y][x].Tile = tree
 						}
 					}
 				}
 			}
 		}
 	}
-	// Allows for at least 75% of world.size of trees to be populated
+	// Allows for at least 75% of world.Size of trees to be populated
 	world.printWorld()
-	// log.Println(treeCount, math.Round(float64(world.size)*0.75))
-	if treeCount < int(math.Round(float64(world.size)*0.75)) {
+	// log.Println(treeCount, math.Round(float64(world.Size)*0.75))
+	if treeCount < int(math.Round(float64(world.Size)*0.75)) {
 		world.populateTrees()
 	}
 }

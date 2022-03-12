@@ -234,7 +234,7 @@ func (player *playerInfo) renderPlayer() {
 	player.model.body.model.Transform = rl.MatrixRotateY(player.rotation.rotation * (math.Pi / 180))
 	player.model.bottom.model.Transform = rl.MatrixRotateY(player.rotation.rotation * (math.Pi / 180))
 
-	// rl.DrawCubeWires(player.pos, player.size.X, player.size.Y, player.size.Z, rl.Black)
+	// rl.DrawCubeWires(player.pos, player.Size.X, player.Size.Y, player.Size.Z, rl.Black)
 
 	rl.DrawModel(player.model.accessory.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.hair.model, player.pos, player.scale, rl.White)

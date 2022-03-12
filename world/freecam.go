@@ -7,7 +7,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var world *worldStruct
+var world *WorldStruct
 var cam rl.Camera
 
 type worldOptionStruct struct {
@@ -56,12 +56,12 @@ func Freecam() {
 
 // Not efficiently rendered - deprecated
 // Ignores shader rending
-func (world *worldStruct) renderWorld() {
+func (world *WorldStruct) renderWorld() {
 	spacing := float32(5.0)
-	width := float32(world.size)
+	width := float32(world.Size)
 	length := width
-	for y := range world.tiles {
-		for x := range world.tiles[y] {
+	for y := range world.Tiles {
+		for x := range world.Tiles[y] {
 
 			xPos := (float32(x) - (width / 2)) * worldOption.tileSpacing
 			yPos := (float32(y) - (length / 2)) * worldOption.tileSpacing
@@ -73,17 +73,17 @@ func (world *worldStruct) renderWorld() {
 			// 	col = rl.NewColor(0, 77, 37, 255)
 			// }
 
-			if world.tiles[y][x].noise < 0.15 {
+			if world.Tiles[y][x].Noise < 0.15 {
 				col = rl.NewColor(0, 45, 57, 255)
-			} else if world.tiles[y][x].noise < 0.3 {
+			} else if world.Tiles[y][x].Noise < 0.3 {
 				col = rl.NewColor(0, 163, 204, 255)
-			} else if world.tiles[y][x].noise < 0.6 {
+			} else if world.Tiles[y][x].Noise < 0.6 {
 				col = rl.NewColor(95, 99, 68, 255)
 			} else {
 				col = rl.NewColor(65, 69, 47, 255)
 			}
 
-			height := float32(world.tiles[y][x].noise) * worldOption.tileSize
+			height := float32(world.Tiles[y][x].Noise) * worldOption.tileSize
 			if height < 0.3 {
 				height = 0.3
 			}
@@ -102,13 +102,13 @@ var treeInstances int
 var treeTranslations []rl.Matrix
 var treeModel rl.Model
 
-func (world *worldStruct) meshGen() {
+func (world *WorldStruct) meshGen() {
 
 	// Collection of translations in which the GPU will render the same model over those positions
 	// to save compute time from initialising the model over and over
 	// Shader returns the colour of mesh depending on height level
 
-	tileInstances = world.size * world.size
+	tileInstances = world.Size * world.Size
 	tileTranslations = make([]rl.Matrix, tileInstances) // Locations of instances;
 
 	// Create basic cube mesh
@@ -125,13 +125,13 @@ func (world *worldStruct) meshGen() {
 	tileModel.Materials.Shader = tileShader
 
 	// Assign location for all cubes to create map
-	width := float32(world.size)
+	width := float32(world.Size)
 	length := width
-	for y := range world.tiles {
-		for x := range world.tiles[y] {
+	for y := range world.Tiles {
+		for x := range world.Tiles[y] {
 			xPos := (float32(x) - (width / 2)) * worldOption.tileSpacing
 			yPos := (float32(y) - (length / 2)) * worldOption.tileSpacing
-			height := float32(world.tiles[y][x].noise) * worldOption.tileSize
+			height := float32(world.Tiles[y][x].Noise) * worldOption.tileSize
 			if height < 0.3*worldOption.tileSize {
 				height = 0.3
 			}
@@ -145,7 +145,7 @@ func (world *worldStruct) meshGen() {
 			// log.Println(index, instances, rl.Vector3Transform(rl.NewVector3(0, 0, 0), translations[index]).Y)
 
 			// Get total amount of trees to get amount of instances needed
-			if world.tiles[y][x].tile == tree {
+			if world.Tiles[y][x].Tile == tree {
 				treeInstances++
 			}
 		}
@@ -160,12 +160,12 @@ func (world *worldStruct) meshGen() {
 	// treeModel.Transform = rl.MatrixScale(worldOption.tileSize, worldOption.tileSize, worldOption.tileSize)
 	treeTranslations = make([]rl.Matrix, treeInstances)
 	tmpIndex := 0
-	for y := range world.tiles {
-		for x := range world.tiles[y] {
-			if world.tiles[y][x].tile == tree {
+	for y := range world.Tiles {
+		for x := range world.Tiles[y] {
+			if world.Tiles[y][x].Tile == tree {
 				xPos := (float32(x) - (width / 2)) * worldOption.tileSpacing
 				yPos := (float32(y) - (length / 2)) * worldOption.tileSpacing
-				height := float32(world.tiles[y][x].noise)*worldOption.tileSize - 1
+				height := float32(world.Tiles[y][x].Noise)*worldOption.tileSize - 1
 				pos := rl.NewVector3(xPos, height*worldOption.heightMulti, yPos)
 				mat := rl.MatrixTranslate(pos.X, pos.Y, pos.Z)
 				treeTranslations[tmpIndex] = mat
@@ -177,7 +177,7 @@ func (world *worldStruct) meshGen() {
 
 }
 
-func (world *worldStruct) renderMesh() {
+func (world *WorldStruct) renderMesh() {
 	rl.DrawMeshInstanced(*tileModel.Meshes, *tileModel.Materials, tileTranslations, tileInstances)
 	for _, u := range treeTranslations {
 		// log.Println(rl.Vector3Transform(rl.NewVector3(0, 0, 0), u))

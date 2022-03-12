@@ -79,7 +79,7 @@ func renderOthers() {
 	for key, value := range players {
 		if key != player.username {
 			playerPos := rl.NewVector3(value.X, value.Y, value.Z)
-			// rl.DrawCubeWires(playerPos, player.size.X, player.size.Y, player.size.Z, rl.Black) // default size - players
+			// rl.DrawCubeWires(playerPos, player.Size.X, player.Size.Y, player.Size.Z, rl.Black) // default size - players
 			renderFromUserModelSelection(connectedPlayers[value.Username].UserModelSelection, playerPos, value.Facing)
 		}
 	}

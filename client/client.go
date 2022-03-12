@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Antriko/go-network/shared"
+	"github.com/Antriko/go-network/world"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -19,6 +20,7 @@ var camera = NewCustomCamera(10.0, 3.0, 100.0)
 var models = make(map[string]map[string]modelEntity)
 var arrayOfModels = make(map[string][]modelEntity)
 var users = make(map[string]shared.OtherPlayer)
+var worldMap *world.WorldStruct
 
 // TODO move camera to game/player struct instead of global
 
