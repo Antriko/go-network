@@ -7,7 +7,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var world *worldStruct = createWorld(25)
+var world *worldStruct
 var cam rl.Camera
 
 type worldOptionStruct struct {
@@ -24,6 +24,7 @@ func Freecam() {
 	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
 
 	worldOption = worldOptionStruct{5, 5, 2}
+	world = createWorld(25)
 	world.meshGen()
 
 	pos := rl.NewVector3(10, 20, 10)

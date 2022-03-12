@@ -34,7 +34,8 @@ func game() {
 
 	rl.ClearBackground(rl.RayWhite)
 	rl.BeginMode3D(camera.Camera)
-	renderGridFloor()
+	// renderGridFloor()
+	// world.renderWorld()
 	player.renderPlayer()
 	renderOthers()
 	rl.EndMode3D()

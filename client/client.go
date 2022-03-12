@@ -24,6 +24,7 @@ var users = make(map[string]shared.OtherPlayer)
 
 func Start() {
 	log.SetFlags(log.Lshortfile)
+	log.Println("Client start")
 	rand.Seed(time.Now().UnixNano())
 	rl.SetTraceLog(rl.LogError)
 	rl.SetConfigFlags(rl.FlagWindowResizable)

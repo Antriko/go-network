@@ -268,7 +268,7 @@ func (world *worldStruct) populateTrees() {
 	}
 	// Allows for at least 75% of world.size of trees to be populated
 	world.printWorld()
-	log.Println(treeCount, math.Round(float64(world.size)*0.75))
+	// log.Println(treeCount, math.Round(float64(world.size)*0.75))
 	if treeCount < int(math.Round(float64(world.size)*0.75)) {
 		world.populateTrees()
 	}
