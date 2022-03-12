@@ -37,6 +37,7 @@ void main()
     if (fragTexCoord.y < threshold || fragTexCoord.y > 1 - threshold || fragTexCoord.x < threshold || fragTexCoord.x > 1 - threshold) {
         col = vec4(0, 0, 0, 1);
     } else {
+        // Threshold water
         if (meshY <= 0.3*tileSize) {
             col = vec4(0, 0.639, 0.8, 1);
         } 

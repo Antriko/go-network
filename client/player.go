@@ -182,6 +182,9 @@ func (player *playerInfo) playerMovement() {
 	if rl.IsKeyPressed(rl.KeyEnter) {
 		player.gameStatus = "chat"
 	}
+
+	player.pos.Y = getYCollision(player.pos)
+
 }
 
 func (player *playerInfo) playerRotation() {
@@ -241,6 +244,8 @@ func (player *playerInfo) renderPlayer() {
 	rl.DrawModel(player.model.head.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.body.model, player.pos, player.scale, rl.White)
 	rl.DrawModel(player.model.bottom.model, player.pos, player.scale, rl.White)
+
+	rl.DrawCube(player.pos, 1, 100, 1, rl.Red)
 }
 func (player *playerInfo) renderPlayerTag() {
 	tagOffset := 6

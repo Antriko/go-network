@@ -8,25 +8,10 @@ import (
 	"strconv"
 	"time"
 
+	rl "github.com/gen2brain/raylib-go/raylib"
 	"github.com/gookit/color"
 	noise "github.com/ojrac/opensimplex-go"
 )
-
-func createWorld(size int) *WorldStruct {
-	log.SetFlags(log.Lshortfile)
-	log.Println(mapGreen(" - WORLD GEN - "))
-
-	// Create empty world
-	world := &WorldStruct{
-		WorldGen(size),
-		size,
-	}
-
-	// Add objects
-	world.populateWorld()
-
-	return world
-}
 
 type tileType uint32
 
@@ -42,9 +27,18 @@ type mapTile struct {
 	Noise float64
 	Tile  tileType
 }
+
 type WorldStruct struct {
-	Tiles [][]mapTile
-	Size  int
+	Tiles     [][]mapTile
+	Size      int
+	Instances map[tileType]Instance
+}
+
+type Instance struct {
+	Type         tileType
+	Instances    int
+	Translations []rl.Matrix
+	Model        rl.Model
 }
 
 var mapBlue = color.New(color.FgBlack, color.BgLightBlue).Render
@@ -52,6 +46,22 @@ var mapGreen = color.New(color.FgBlack, color.BgLightGreen).Render
 var mapDarkGreen = color.New(color.FgBlack, color.BgHiGreen).Render
 var mapRed = color.New(color.FgBlack, color.BgRed).Render
 var mapBrown = color.New(color.FgBlack, color.BgDarkGray).Render
+
+func CreateWorld(size int) *WorldStruct {
+	log.SetFlags(log.Lshortfile)
+	log.Println(mapGreen(" - WORLD GEN - "))
+
+	// Create empty world
+	world := &WorldStruct{}
+	world.Tiles = WorldGen(size)
+	world.Size = size
+	world.Instances = make(map[tileType]Instance)
+
+	// Add objects
+	world.populateWorld()
+
+	return world
+}
 
 // Keep size odd so gradients work better
 // personal note; 91 max for own console width
@@ -66,7 +76,7 @@ func WorldGen(size int) [][]mapTile {
 	// 60% at least >0.3
 	if !checkValid(size, 0.3, 0.6, worldGenerated) {
 		// recursion, attempt to create new world
-		log.Println(mapRed(" WORLD NOT VALID - GEN NEW WORLD "))
+		// log.Println(mapRed(" WORLD NOT VALID - GEN NEW WORLD "))
 		worldGenerated = WorldGen(size)
 	}
 	return worldGenerated
@@ -221,10 +231,11 @@ func checkValid(size int, threshold float64, percent float32, noise [][]mapTile)
 }
 
 func (world *WorldStruct) populateWorld() {
-	world.populateTrees()
+	world.populateTrees(10)
+	world.printWorld()
 }
 
-func (world *WorldStruct) populateTrees() {
+func (world *WorldStruct) populateTrees(threshold int) {
 	rand.Seed(time.Now().UnixNano())
 	randomNoise := noiseGen(world.Size, world.Size)
 	treeCount := 0
@@ -235,7 +246,7 @@ func (world *WorldStruct) populateTrees() {
 					treeCount++
 				}
 				randomNum := rand.Intn(100)
-				if randomNum <= 10 { // % threshold
+				if randomNum <= threshold { // % threshold
 					if randomNoise[y][x].Noise > 0.1 {
 						// check around to see if obstructed by water
 						// O O O
@@ -267,9 +278,9 @@ func (world *WorldStruct) populateTrees() {
 		}
 	}
 	// Allows for at least 75% of world.Size of trees to be populated
-	world.printWorld()
-	// log.Println(treeCount, math.Round(float64(world.Size)*0.75))
-	if treeCount < int(math.Round(float64(world.Size)*0.75)) {
-		world.populateTrees()
+	// Also decrease threshold of trees by 1% each time to not allow for infinite loop
+	// log.Println(treeCount, math.Round(float64(world.Size)*0.75), threshold)
+	if treeCount < int(math.Round(float64(world.Size)*0.75)) && threshold > 0 {
+		world.populateTrees(threshold - 1)
 	}
 }

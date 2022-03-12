@@ -23,18 +23,28 @@ var users = make(map[string]shared.OtherPlayer)
 
 var worldMap *world.WorldStruct
 var worldOption world.WorldOptionStruct
+var worldSize int
 
 // TODO move camera to game/player struct instead of global
 
 func Start() {
 	log.SetFlags(log.Lshortfile)
-	log.Println("Client start")
 	rand.Seed(time.Now().UnixNano())
 	rl.SetTraceLog(rl.LogError)
 	rl.SetConfigFlags(rl.FlagWindowResizable)
 	rl.InitWindow(1280, 720, "Chatroom")
 	rl.SetTargetFPS(60)
 	rl.SetWindowPosition(3200, 100) // Stops displaying on my left monitor
+
+	worldOption = world.WorldOptionStruct{
+		TileSize:    5.0,
+		TileSpacing: 5.0,
+		HeightMulti: 2.0,
+	}
+
+	worldSize = 9
+	worldMap = world.CreateWorld(worldSize)
+	worldMap.MeshGen(worldOption)
 
 	player.username = ""
 
@@ -67,6 +77,22 @@ func Start() {
 	menu.changeModel()
 
 	for !rl.WindowShouldClose() {
+
+		if rl.IsKeyPressed(rl.KeySpace) {
+			worldMap = world.CreateWorld(worldSize)
+			worldMap.MeshGen(worldOption)
+		} else if rl.IsKeyPressed(rl.KeyMinus) {
+			worldSize--
+			if worldSize < 2 {
+				worldSize = 2
+			}
+			worldMap = world.CreateWorld(worldSize)
+			worldMap.MeshGen(worldOption)
+		} else if rl.IsKeyPressed(rl.KeyEqual) {
+			worldSize++
+			worldMap = world.CreateWorld(worldSize)
+			worldMap.MeshGen(worldOption)
+		}
 
 		switch player.state {
 		case "menu":

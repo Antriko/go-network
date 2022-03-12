@@ -34,8 +34,8 @@ func game() {
 
 	rl.ClearBackground(rl.RayWhite)
 	rl.BeginMode3D(camera.Camera)
-	// renderGridFloor()
-	// world.renderWorld()
+	renderGridFloor()
+	worldMap.RenderMesh()
 	player.renderPlayer()
 	renderOthers()
 	rl.EndMode3D()
@@ -148,5 +148,39 @@ func renderChat() {
 		if time.Now().Nanosecond() > 500000000 {
 			rl.DrawText("|", 20+rl.MeasureText(message, 20), int32(rl.GetScreenHeight())-20, 20, rl.Black)
 		}
+	}
+}
+
+// Gets Y pos of tile that player is in
+func getYCollision(pos rl.Vector3) float32 {
+
+	offset := float32(0)
+	if worldMap.Size%2 == 1 {
+		offset = (worldOption.TileSize / 2) + float32((worldMap.Size-int(worldOption.TileSpacing))/2)
+	} else {
+		offset = float32(worldMap.Size) / 2
+	}
+
+	posX := float32(pos.X/worldOption.TileSpacing + offset)
+	posZ := float32(pos.Z/worldOption.TileSpacing + offset)
+
+	log.Printf(green(" %v %v       %v %v     %v   %v "), math.Floor(float64(posX)), math.Floor(float64(posZ)), posX, posZ, worldSize, offset)
+
+	if posX < 0 {
+		posX = 0
+	} else if posX > float32(worldMap.Size) {
+		posX = float32(worldMap.Size) - 1
+	}
+	if posZ < 0 {
+		posZ = 0
+	} else if posZ > float32(worldMap.Size) {
+		posZ = float32(worldMap.Size) - 1
+	}
+
+	worldTile := worldMap.Tiles[int(math.Floor(float64(posZ)))][int(math.Floor(float64(posX)))]
+	if worldTile.Noise < 0.3 {
+		return 0.3 * worldOption.TileSize * worldOption.HeightMulti
+	} else {
+		return float32(worldTile.Noise*float64(worldOption.TileSize*worldOption.HeightMulti)) + (worldOption.TileSize / 2)
 	}
 }
