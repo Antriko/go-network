@@ -35,7 +35,9 @@ func game() {
 	rl.ClearBackground(rl.RayWhite)
 	rl.BeginMode3D(camera.Camera)
 	renderGridFloor()
+
 	worldMap.RenderMesh()
+
 	player.renderPlayer()
 	renderOthers()
 	rl.EndMode3D()
@@ -164,8 +166,6 @@ func getYCollision(pos rl.Vector3) float32 {
 
 	posX := float32(pos.X/worldOption.TileSpacing + offset)
 	posZ := float32(pos.Z/worldOption.TileSpacing + offset)
-
-	log.Printf(green(" %v %v       %v %v     %v   %v "), math.Floor(float64(posX)), math.Floor(float64(posZ)), posX, posZ, worldSize, offset)
 
 	if posX < 0 {
 		posX = 0

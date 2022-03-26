@@ -42,7 +42,7 @@ func Start() {
 		HeightMulti: 2.0,
 	}
 
-	worldSize = 9
+	worldSize = 50
 	worldMap = world.CreateWorld(worldSize)
 	worldMap.MeshGen(worldOption)
 
