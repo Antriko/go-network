@@ -12,7 +12,7 @@ Please keep in mind this is a personal project in which I am trying to learn on 
 ## Network
 The backend uses DTLS and TLC.
 
-The players are able to communicate to one another via the chat, as well as update the players locations for all users that are connected to the server and show off what user creation they've created pre-joining the game.
+The players are able to communicate to one another via the chat, as well as update the players locations for all users that are connected to the server and show off what user models they've chosen for their plaeyr pre-joining the game.
 
 
 ## Game Engine
