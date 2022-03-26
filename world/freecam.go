@@ -3,7 +3,6 @@ package world
 import (
 	"fmt"
 	"image/color"
-	"log"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -192,7 +191,6 @@ func (world *WorldStruct) RenderMesh() {
 		// log.Println(instance.Type, len(instance.Translations), instance.Instances)
 		if instance.Type == tree {
 			for _, u := range instance.Translations {
-				log.Println(u)
 				rl.DrawModel(instance.Model, rl.Vector3Transform(rl.NewVector3(0, 0, 0), u), WorldOption.TileSize*0.75, rl.White)
 			}
 			continue

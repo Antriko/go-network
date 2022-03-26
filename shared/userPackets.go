@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"log"
+
+	"github.com/Antriko/go-network/world"
 )
 
 //////////////////
@@ -41,6 +44,10 @@ type S2CUserLoginResponsePacket struct {
 	UsersModelSelection map[string]OtherPlayer `json:"ums"`
 }
 
+type S2CSendWorldPacket struct {
+	World *world.WorldStruct
+}
+
 type OtherPlayer struct {
 	Username           string
 	UserModelSelection UserModelSelection
@@ -63,6 +70,28 @@ func (u *S2CUserLoginResponsePacket) Unmarshal(b []byte) error {
 	json.Unmarshal(b, &u)
 	return nil
 }
+
+// Marshal converts a UserFinishedSetupPacket into []byte
+func (u *S2CSendWorldPacket) Marshal() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	binary.Write(buf, binary.LittleEndian, Reliable)
+	binary.Write(buf, binary.LittleEndian, S2CSendWorldPacketType)
+
+	userBytes, _ := json.Marshal(u)
+	buf.Write(userBytes)
+
+	return buf.Bytes(), nil
+}
+
+// Unmarshal converts []byte into a S2CSendWorldPacket
+func (u *S2CSendWorldPacket) Unmarshal(b []byte) error {
+	log.Println(len(b))
+	json.Unmarshal(b, &u)
+	log.Println(len(b))
+	return nil
+}
+
+// If world too big, then better to split the world into chunks and send those rather than entire map at once.
 
 // C2SUserFinishedSetupPacket is returned after client finishes setup
 type C2SUserFinishedSetupPacket struct {

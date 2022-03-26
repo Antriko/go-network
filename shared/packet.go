@@ -40,6 +40,7 @@ const (
 	S2CUpdatePlayersPosPacketType  // Send map of all players pos
 	S2CChatMessagePacketType       // User recieves a new chat message
 	S2CUserInformationPacketType   // Send user information back to client
+	S2CSendWorldPacketType         // Send same world to all clients
 )
 
 // Serializable ensures that the struct has a Bytes() function
@@ -130,6 +131,8 @@ func BytesToStruct(b []byte) (interface{}, error) {
 		ret = &S2CUpdatePlayersPosPacket{}
 	case S2CUserInformationPacketType:
 		ret = &S2CUserInformationPacket{}
+	case S2CSendWorldPacketType:
+		ret = &S2CSendWorldPacket{}
 	default:
 		return nil, ErrUndefinedPacket
 	}

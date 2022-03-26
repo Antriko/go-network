@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Antriko/go-network/shared"
+	"github.com/Antriko/go-network/world"
 	"github.com/gookit/color"
 )
 
@@ -17,11 +18,18 @@ var yellow = color.New(color.FgBlack, color.BgYellow).Render
 var green = color.New(color.FgBlack, color.BgGreen).Render
 var magenta = color.New(color.FgBlack, color.BgMagenta).Render
 
+var worldMap *world.WorldStruct
+var worldSize int
+
 func server() {
 	log.SetFlags(log.Lshortfile)
 
 	AllConnections = make(Connections)
 	log.Println(magenta(" - Starting Server - "))
+
+	worldSize = 50
+	worldMap = world.CreateWorld(worldSize)
+
 	go func() {
 		// TODO terminal commands
 		reader := bufio.NewReader(os.Stdin)
@@ -74,6 +82,10 @@ func serverPacketHandler(conn *shared.DualConnection) {
 				conn.DataWriteChan <- &shared.S2CUserLoginResponsePacket{
 					Success:             true,
 					UsersModelSelection: allUserModelSelection,
+				}
+
+				conn.DataWriteChan <- &shared.S2CSendWorldPacket{
+					World: worldMap,
 				}
 
 				AllConnections[conn] = &UserConnection{

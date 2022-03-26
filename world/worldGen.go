@@ -13,29 +13,29 @@ import (
 	noise "github.com/ojrac/opensimplex-go"
 )
 
-type tileType uint32
+type TileType uint32
 
 const thresholdWater = 0.3
 const thresholdLand = 0.6
 
 const (
-	empty tileType = iota
+	empty TileType = iota
 	tree
 )
 
-type mapTile struct {
-	Noise float64
-	Tile  tileType
+type MapTile struct {
+	Noise float64  `json:"n"`
+	Tile  TileType `json:"ti"`
 }
 
 type WorldStruct struct {
-	Tiles     [][]mapTile
-	Size      int
-	Instances map[tileType]Instance
+	Tiles     [][]MapTile           `json:"t"`
+	Size      int                   `json:"s"`
+	Instances map[TileType]Instance `json:"i"`
 }
 
 type Instance struct {
-	Type         tileType
+	Type         TileType
 	Instances    int
 	Translations []rl.Matrix
 	Model        rl.Model
@@ -55,7 +55,7 @@ func CreateWorld(size int) *WorldStruct {
 	world := &WorldStruct{}
 	world.Tiles = WorldGen(size)
 	world.Size = size
-	world.Instances = make(map[tileType]Instance)
+	world.Instances = make(map[TileType]Instance)
 
 	// Add objects
 	world.populateWorld()
@@ -65,7 +65,7 @@ func CreateWorld(size int) *WorldStruct {
 
 // Keep size odd so gradients work better
 // personal note; 91 max for own console width
-func WorldGen(size int) [][]mapTile {
+func WorldGen(size int) [][]MapTile {
 
 	width, height := size, size
 	rand.Seed(time.Now().UnixNano())
@@ -82,7 +82,7 @@ func WorldGen(size int) [][]mapTile {
 	return worldGenerated
 }
 
-func printNoise(noise [][]mapTile) {
+func printNoise(noise [][]MapTile) {
 	fmt.Println()
 	for y := range noise {
 		for x := range noise[y] {
@@ -102,7 +102,7 @@ func printNoise(noise [][]mapTile) {
 	fmt.Println()
 }
 
-func printEmpty(noise [][]mapTile) {
+func printEmpty(noise [][]MapTile) {
 	fmt.Println()
 	for y := range noise {
 		for x := range noise[y] {
@@ -120,7 +120,7 @@ func printEmpty(noise [][]mapTile) {
 	fmt.Println()
 }
 
-func printTile(tile [][]mapTile) {
+func printTile(tile [][]MapTile) {
 	fmt.Println()
 	for y := range tile {
 		for x := range tile[y] {
@@ -150,11 +150,11 @@ func (world *WorldStruct) printEmpty() {
 	printEmpty(world.Tiles)
 }
 
-func noiseGen(width int, height int) [][]mapTile {
+func noiseGen(width int, height int) [][]MapTile {
 	// Create basic simplex noise
-	noiseWorld := make([][]mapTile, width)
+	noiseWorld := make([][]MapTile, width)
 	for y := range noiseWorld {
-		noiseWorld[y] = make([]mapTile, height)
+		noiseWorld[y] = make([]MapTile, height)
 	}
 
 	noiseInst := noise.New(rand.Int63()) // Produces smaller islands but is less successful in validation
@@ -170,7 +170,7 @@ func noiseGen(width int, height int) [][]mapTile {
 	return noiseWorld
 }
 
-func combineNoise(width int, height int, noise1 [][]mapTile, noise2 [][]mapTile) [][]mapTile {
+func combineNoise(width int, height int, noise1 [][]MapTile, noise2 [][]MapTile) [][]MapTile {
 	// check if width/height is same
 
 	for y := range noise1 {
@@ -188,11 +188,11 @@ func combineNoise(width int, height int, noise1 [][]mapTile, noise2 [][]mapTile)
 	return noise1
 }
 
-func mergeCircleNoise(width int, height int, noise [][]mapTile) [][]mapTile {
+func mergeCircleNoise(width int, height int, noise [][]MapTile) [][]MapTile {
 	// Create circle gradient to factor out edges to create island
-	circle := make([][]mapTile, width)
+	circle := make([][]MapTile, width)
 	for y := range noise {
-		circle[y] = make([]mapTile, height)
+		circle[y] = make([]MapTile, height)
 	}
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
@@ -212,7 +212,7 @@ func mergeCircleNoise(width int, height int, noise [][]mapTile) [][]mapTile {
 	// printNoise(circle)
 	return combineNoise(width, height, noise, circle)
 }
-func checkValid(size int, threshold float64, percent float32, noise [][]mapTile) bool {
+func checkValid(size int, threshold float64, percent float32, noise [][]MapTile) bool {
 	// check if total noise contains >= percent%
 	// dont want mainly water generated islands
 	total := 0.0
@@ -232,7 +232,7 @@ func checkValid(size int, threshold float64, percent float32, noise [][]mapTile)
 
 func (world *WorldStruct) populateWorld() {
 	world.populateTrees(10)
-	world.printWorld()
+	// world.printWorld()
 }
 
 func (world *WorldStruct) populateTrees(threshold int) {

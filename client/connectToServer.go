@@ -46,8 +46,16 @@ func serverConn() {
 				case *shared.A2APongPacket:
 					log.Println("ponged", typed.Reliability)
 
-				case *shared.S2CUserLoginResponsePacket: // Send constant coord updates to server
+				case *shared.S2CSendWorldPacket:
+					log.Println(typed.World)
+					if typed.World != nil {
+						worldMap = typed.World
+						log.Println(green(" World recieved "))
+					} else {
+						log.Println(red(" World not recieved "))
+					}
 
+				case *shared.S2CUserLoginResponsePacket: // Send constant coord updates to server
 					go func() {
 						timer := time.NewTimer(time.Second / 20)
 						for {
