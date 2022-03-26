@@ -20,7 +20,7 @@ I've chosen to use [raylib-go](https://github.com/gen2brain/raylib-go) which ess
 
 
 ## Modeling
-I use [blockbench](https://www.blockbench.net/) to create my models which I then export as GLTF which RayLib uses. Animations within raylib-go are not supported however I have been able to make do with the limitations.
+I use [blockbench](https://www.blockbench.net/) to create my models which I then export as GLTF which raylib supports. Animations within raylib-go are not supported however I have been able to make do with the limitations.
 
 ## Procedurally generated maps
 With the use of noise, I've been able to create unique islands that are able to be rendered into the game.
