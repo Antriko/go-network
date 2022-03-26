@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"log"
 	"time"
 )
 
@@ -93,3 +94,25 @@ func (m *S2CUserInformationPacket) Unmarshal(b []byte) error {
 	json.Unmarshal(b, &m)
 	return nil
 }
+
+// Marshal converts a UserFinishedSetupPacket into []byte
+func (u *S2CSendWorldPacket) Marshal() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	binary.Write(buf, binary.LittleEndian, Reliable)
+	binary.Write(buf, binary.LittleEndian, S2CSendWorldPacketType)
+
+	userBytes, _ := json.Marshal(u)
+	buf.Write(userBytes)
+
+	return buf.Bytes(), nil
+}
+
+// Unmarshal converts []byte into a S2CSendWorldPacket
+func (u *S2CSendWorldPacket) Unmarshal(b []byte) error {
+	log.Println(len(b))
+	json.Unmarshal(b, &u)
+	log.Println(len(b))
+	return nil
+}
+
+// If world too big, then better to split the world into chunks and send those rather than entire map at once.
