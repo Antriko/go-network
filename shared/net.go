@@ -19,6 +19,10 @@ var yellow = color.New(color.FgBlack, color.BgYellow).Render
 var green = color.New(color.FgBlack, color.BgGreen).Render
 var magenta = color.New(color.FgBlack, color.BgMagenta).Render
 
+// Packet time
+var PacketTime = time.Second / 64
+var DisplayPackets = false
+
 // Errors
 var (
 	ErrConnClosed = errors.New("TLS connection closed")
@@ -197,7 +201,9 @@ func (c *DualConnection) PollConnection(removeConnectionCallback func()) {
 			c.resetTimer()
 
 			if s, err := BytesToStruct(buf[:n]); err == nil {
-				log.Println(yellow(" TLS "), s)
+				if DisplayPackets {
+					log.Println(yellow(" TLS "), s)
+				}
 				c.DataReadChan <- s
 			} else {
 				// log.Println(err)
@@ -215,7 +221,9 @@ func (c *DualConnection) PollConnection(removeConnectionCallback func()) {
 			c.resetTimer()
 
 			if s, err := BytesToStruct(buf[:n]); err == nil {
-				log.Println(yellow(" DTLS "), s)
+				if DisplayPackets {
+					log.Println(yellow(" DTLS "), s)
+				}
 				c.DataReadChan <- s
 			} else {
 				// log.Println(err)

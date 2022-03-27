@@ -135,7 +135,9 @@ func serverPacketHandler(conn *shared.DualConnection) {
 		for isConn {
 			select {
 			case r := <-conn.DataReadChan:
-				log.Printf("%T", r)
+				if shared.DisplayPackets {
+					log.Printf("%T", r)
+				}
 
 				switch typed := r.(type) {
 				case *shared.C2SUpdatePlayerPosPacket:
@@ -173,7 +175,7 @@ func serverPacketHandler(conn *shared.DualConnection) {
 
 func serverUpdates() {
 	go func() {
-		timer := time.NewTimer(time.Second / 50)
+		timer := time.NewTimer(shared.PacketTime)
 		for {
 			select {
 			case <-timer.C: // Send updates
@@ -183,7 +185,7 @@ func serverUpdates() {
 						Coords: userCoordsMap,
 					}
 				}
-				timer.Reset(time.Second)
+				timer.Reset(shared.PacketTime)
 			}
 		}
 	}()

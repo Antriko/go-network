@@ -38,7 +38,9 @@ func serverConn() {
 		for {
 			select {
 			case r := <-DataReadChan:
-				log.Printf("%T", r)
+				if shared.DisplayPackets {
+					log.Printf("%T", r)
+				}
 				switch typed := r.(type) {
 				case *shared.A2APingPacket:
 					log.Println("pinged", typed.Reliability)
@@ -47,7 +49,6 @@ func serverConn() {
 					log.Println("ponged", typed.Reliability)
 
 				case *shared.S2CSendWorldPacket:
-					log.Println(yellow(typed))
 					if typed.WorldTiles != nil {
 						log.Println(green(" World recieved "))
 						worldMap.Tiles = typed.WorldTiles
@@ -59,7 +60,7 @@ func serverConn() {
 
 				case *shared.S2CUserLoginResponsePacket: // Send constant coord updates to server
 					go func() {
-						timer := time.NewTimer(time.Second / 20)
+						timer := time.NewTimer(shared.PacketTime)
 						for {
 							select {
 							case <-timer.C:
@@ -69,7 +70,7 @@ func serverConn() {
 									Z:      player.pos.Z,
 									Facing: player.rotation.facing,
 								}
-								timer.Reset(time.Second)
+								timer.Reset(shared.PacketTime)
 							}
 						}
 					}()
