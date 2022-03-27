@@ -218,7 +218,9 @@ func debugging() {
 	rl.DrawText("- Mouse Wheel Pressed to Pan", 40, 60, 10, rl.DarkGray)
 	rl.DrawText("- Alt + Mouse Wheel Pressed to Rotate", 40, 80, 10, rl.DarkGray)
 	rl.DrawText("- Alt + Ctrl + Mouse Wheel Pressed for Smooth Zoom", 40, 100, 10, rl.DarkGray)
-	rl.DrawText("- Z to y += 10", 40, 120, 10, rl.DarkGray)
+	rl.DrawText("- Z to y += 10", 40, 140, 10, rl.DarkGray)
+	rl.DrawText("- +/- to change map size", 40, 160, 10, rl.DarkGray)
+	rl.DrawText("- Spacebar to create new map with current size", 40, 180, 10, rl.DarkGray)
 	// Debugging
 	start := 250
 	posX := int32(10)
