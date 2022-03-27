@@ -78,21 +78,21 @@ func Start() {
 
 	for !rl.WindowShouldClose() {
 
-		if rl.IsKeyPressed(rl.KeySpace) {
-			worldMap = world.CreateWorld(worldSize)
-			worldMap.MeshGen(worldOption)
-		} else if rl.IsKeyPressed(rl.KeyMinus) {
-			worldSize--
-			if worldSize < 2 {
-				worldSize = 2
-			}
-			worldMap = world.CreateWorld(worldSize)
-			worldMap.MeshGen(worldOption)
-		} else if rl.IsKeyPressed(rl.KeyEqual) {
-			worldSize++
-			worldMap = world.CreateWorld(worldSize)
-			worldMap.MeshGen(worldOption)
-		}
+		// if rl.IsKeyPressed(rl.KeySpace) {
+		// 	worldMap = world.CreateWorld(worldSize)
+		// 	worldMap.MeshGen(worldOption)
+		// } else if rl.IsKeyPressed(rl.KeyMinus) {
+		// 	worldSize--
+		// 	if worldSize < 2 {
+		// 		worldSize = 2
+		// 	}
+		// 	worldMap = world.CreateWorld(worldSize)
+		// 	worldMap.MeshGen(worldOption)
+		// } else if rl.IsKeyPressed(rl.KeyEqual) {
+		// 	worldSize++
+		// 	worldMap = world.CreateWorld(worldSize)
+		// 	worldMap.MeshGen(worldOption)
+		// }
 
 		switch player.state {
 		case "menu":
@@ -153,5 +153,6 @@ func debugging() {
 	rl.DrawText(fmt.Sprintf("rotation: %v", menu.rotation), posX, int32(incrY()), posY, rl.Black)
 	rl.DrawText(fmt.Sprintf("playerFACING: %v", player.rotation.facing), posX, int32(incrY()), posY, rl.Black)
 	rl.DrawText(fmt.Sprintf("playerROTATION: %v", player.rotation.rotation), posX, int32(incrY()), posY, rl.Black)
+	rl.DrawText(fmt.Sprintf("worldSize: %v", worldMap.Size), posX, int32(incrY()), posY, rl.Black)
 
 }

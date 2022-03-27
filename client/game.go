@@ -129,33 +129,53 @@ func renderOtherTag() {
 
 func renderChat() {
 	var chatLen int
+	fontSize := 20
 	if len(chatHistory) > 6 {
 		chatLen = len(chatHistory) - 6
 	} else {
 		chatLen = 0
 	}
+
+	largestText := int32(rl.GetScreenWidth() / 3)
+	for i := len(chatHistory) - 1; i >= chatLen; i-- {
+		message := getMessage(chatHistory[i])
+		current := rl.MeasureText(message, int32(fontSize)) + int32(fontSize)
+		if current > largestText {
+			largestText = current
+		}
+	}
+
+	rl.DrawRectangle(0, int32(rl.GetScreenHeight()-(fontSize*2)-(fontSize*len(chatHistory))), largestText, int32(fontSize*len(chatHistory))+(int32(fontSize)*2), rl.ColorAlpha(rl.DarkGray, .5))
+
 	for i := len(chatHistory) - 1; i >= chatLen; i-- {
 		// log.Println(chatHistory[i].Time.Format("15:04:05"))
-		var message string
-		switch chatHistory[i].Type {
-		case shared.AllChat: // All chat
-			message = fmt.Sprintf("[%v] %s: %s", chatHistory[i].Time.Format("15:04:05"), chatHistory[i].Username, chatHistory[i].Message)
-		case shared.UserConnect: // User connected
-			message = fmt.Sprintf("[%v] User %s has connected.", chatHistory[i].Time.Format("15:04:05"), chatHistory[i].Username)
-		case shared.UserDisconnect:
-			message = fmt.Sprintf("[%v] User %s has disonnected.", chatHistory[i].Time.Format("15:04:05"), chatHistory[i].Username)
-		}
-		rl.DrawText(message, 10, int32(rl.GetScreenHeight()-20-(20*(len(chatHistory)-i))), 20, rl.Black)
+		message := getMessage(chatHistory[i])
+		rl.DrawText(message, 10, int32(rl.GetScreenHeight()-fontSize-(fontSize*(len(chatHistory)-i))), int32(fontSize), rl.Black)
 	}
 
 	rl.DrawLine(10, int32(rl.GetScreenWidth()), 150, int32(rl.GetScreenWidth())+5, rl.Black)
 	message := fmt.Sprintf("%s: %s", player.username, player.chatMessage)
-	rl.DrawText(message, 10, int32(rl.GetScreenHeight())-20, 20, rl.Black)
+	rl.DrawText(message, 10, int32(rl.GetScreenHeight()-fontSize), int32(fontSize), rl.Black)
 	if player.gameStatus == "chat" { // blinking |
 		if time.Now().Nanosecond() > 500000000 {
-			rl.DrawText("|", 20+rl.MeasureText(message, 20), int32(rl.GetScreenHeight())-20, 20, rl.Black)
+			rl.DrawText("|", int32(fontSize)+rl.MeasureText(message, int32(fontSize)), int32(rl.GetScreenHeight()-fontSize), int32(fontSize), rl.Black)
 		}
 	}
+}
+
+func getMessage(message ChatMessage) string {
+	switch message.Type {
+	case shared.AllChat: // All chat
+		return fmt.Sprintf("[%v] %s: %s", message.Time.Format("15:04:05"), message.Username, message.Message)
+	case shared.UserConnect: // User connected
+		return fmt.Sprintf("[%v] User %s has connected.", message.Time.Format("15:04:05"), message.Username)
+	case shared.UserDisconnect:
+		return fmt.Sprintf("[%v] User %s has disonnected.", message.Time.Format("15:04:05"), message.Username)
+	case shared.CommandWorldSize: // User changed map size
+		return fmt.Sprintf("[%v] User %s has changed world size to %s.", message.Time.Format("15:04:05"), message.Username, message.Message)
+	}
+	log.Println(message.Type)
+	return "?"
 }
 
 // Gets Y pos of tile that player is in

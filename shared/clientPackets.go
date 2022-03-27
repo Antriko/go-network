@@ -59,6 +59,8 @@ const (
 	PrivateMessage
 	UserConnect
 	UserDisconnect
+
+	CommandWorldSize
 	// Different commands i.e. /list
 )
 

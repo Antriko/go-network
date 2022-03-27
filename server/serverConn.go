@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -71,8 +72,7 @@ func serverPacketHandler(conn *shared.DualConnection) {
 
 				// Send model selection of users that are logged in
 				allUserModelSelection := make(map[string]shared.OtherPlayer)
-				for key, value := range AllConnections {
-					log.Println(key, value.UserModelSelection)
+				for _, value := range AllConnections {
 					allUserModelSelection[value.Username] = shared.OtherPlayer{
 						Username:           value.Username,
 						UserModelSelection: value.UserModelSelection,
@@ -151,6 +151,28 @@ func serverPacketHandler(conn *shared.DualConnection) {
 
 				case *shared.C2SChatMessagePacket:
 					log.Printf("%v %v %v", typed.Username, typed.Type, typed.Message)
+
+					// Change world size and send to all players
+					if typed.Type == shared.CommandWorldSize {
+						i, err := strconv.Atoi(typed.Message)
+						if err != nil {
+							continue
+						}
+						log.Printf(green(" NEW WORLD BY %v "), typed.Username)
+						worldSize = i
+						worldMap = world.CreateWorld(worldSize)
+						log.Printf(green(" NEW WORLD BY %v "), typed.Username)
+
+						for userConn := range AllConnections {
+							log.Println(userConn)
+							userConn.DataWriteChan <- &shared.S2CSendWorldPacket{
+								WorldTiles: worldMap.Tiles,
+								Size:       worldMap.Size,
+							}
+						}
+						log.Printf(green(" NEW WORLD BY %v "), typed.Username)
+					}
+
 					for userConn := range AllConnections {
 						userConn.DataWriteChan <- &shared.S2CChatMessagePacket{
 							Username: typed.Username,

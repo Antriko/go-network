@@ -1,9 +1,12 @@
 package client
 
 import (
+	"log"
 	"math"
 	"math/rand"
 	"net"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Antriko/go-network/shared"
@@ -99,7 +102,8 @@ func (player *playerInfo) playerTyping() {
 	}
 
 	// A-Z, space and 0-9 for now
-	if (65 <= input && input <= 90) || input == 32 || (48 <= input && input <= 57) {
+	// Also / for command
+	if (65 <= input && input <= 90) || input == 32 || (48 <= input && input <= 57) || input == 47 {
 		player.chatMessage = player.chatMessage + string(input)
 	}
 
@@ -260,11 +264,35 @@ func (player *playerInfo) renderPlayerTag() {
 
 func (player *playerInfo) sendChatMessage() {
 
-	DataWriteChan <- &shared.C2SChatMessagePacket{
-		Username: player.username,
-		Type:     shared.AllChat,
-		Message:  player.chatMessage,
+	// Check if command
+	if player.chatMessage[0:1] == "/" {
+		chat := strings.Split(player.chatMessage, " ")
+
+		command := strings.ToUpper(chat[0])
+		switch command {
+		case "/SIZE":
+
+			// Make sure there is a 2nd argument and that it's a integer and more than 2
+			i, err := strconv.Atoi(chat[1])
+			if err != nil || len(chat) < 2 || i < 2 {
+				log.Println(err)
+				break
+			}
+
+			DataWriteChan <- &shared.C2SChatMessagePacket{
+				Username: player.username,
+				Type:     shared.CommandWorldSize,
+				Message:  strconv.Itoa(i),
+			}
+		}
+	} else {
+		DataWriteChan <- &shared.C2SChatMessagePacket{
+			Username: player.username,
+			Type:     shared.AllChat,
+			Message:  player.chatMessage,
+		}
 	}
+
 	player.chatMessage = ""
 
 }

@@ -49,6 +49,7 @@ func serverConn() {
 					log.Println("ponged", typed.Reliability)
 
 				case *shared.S2CSendWorldPacket:
+					log.Println("WORLD STUFF??")
 					if typed.WorldTiles != nil {
 						log.Println(green(" World recieved "))
 						worldMap.Tiles = typed.WorldTiles
@@ -100,6 +101,8 @@ func serverConn() {
 						typed.Time,
 						typed.Message,
 					})
+				default:
+					log.Println("???")
 				}
 
 			}

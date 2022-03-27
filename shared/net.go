@@ -20,8 +20,8 @@ var green = color.New(color.FgBlack, color.BgGreen).Render
 var magenta = color.New(color.FgBlack, color.BgMagenta).Render
 
 // Packet time
-var PacketTime = time.Second / 64
-var DisplayPackets = false
+var PacketTime = time.Second
+var DisplayPackets = true
 
 // Errors
 var (
@@ -210,11 +210,12 @@ func (c *DualConnection) PollConnection(removeConnectionCallback func()) {
 			}
 		}
 	}()
+
 	go func() { // DTLS Connection
 		for {
 			n, err := c.DTLSConnection.Read(buf)
 			if err != nil {
-				// log.Println(err)
+				log.Println(err)
 				c.DataErrChan <- ErrConnClosed
 				return
 			}
@@ -226,7 +227,7 @@ func (c *DualConnection) PollConnection(removeConnectionCallback func()) {
 				}
 				c.DataReadChan <- s
 			} else {
-				// log.Println(err)
+				log.Println(err)
 			}
 		}
 	}()
