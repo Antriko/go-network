@@ -47,10 +47,12 @@ func serverConn() {
 					log.Println("ponged", typed.Reliability)
 
 				case *shared.S2CSendWorldPacket:
-					log.Println(typed.World)
-					if typed.World != nil {
-						worldMap = typed.World
+					log.Println(yellow(typed))
+					if typed.WorldTiles != nil {
 						log.Println(green(" World recieved "))
+						worldMap.Tiles = typed.WorldTiles
+						worldMap.Size = typed.Size
+						player.gameStatus = "genMesh"
 					} else {
 						log.Println(red(" World not recieved "))
 					}

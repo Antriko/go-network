@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-
-	"github.com/Antriko/go-network/world"
 )
 
 //////////////////
@@ -41,10 +39,6 @@ type S2CUserLoginResponsePacket struct {
 	// ID uint32 // Server sends a new unique ID to assosiate with the player
 	Success             bool                   `json:"s"`
 	UsersModelSelection map[string]OtherPlayer `json:"ums"`
-}
-
-type S2CSendWorldPacket struct {
-	World *world.WorldStruct
 }
 
 type OtherPlayer struct {

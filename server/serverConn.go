@@ -27,7 +27,7 @@ func server() {
 	AllConnections = make(Connections)
 	log.Println(magenta(" - Starting Server - "))
 
-	worldSize = 50
+	worldSize = 10
 	worldMap = world.CreateWorld(worldSize)
 
 	go func() {
@@ -85,7 +85,8 @@ func serverPacketHandler(conn *shared.DualConnection) {
 				}
 
 				conn.DataWriteChan <- &shared.S2CSendWorldPacket{
-					World: worldMap,
+					WorldTiles: worldMap.Tiles,
+					Size:       worldMap.Size,
 				}
 
 				AllConnections[conn] = &UserConnection{

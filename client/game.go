@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Antriko/go-network/shared"
+	"github.com/Antriko/go-network/world"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -24,6 +25,10 @@ func game() {
 		player.playerMovement()
 	case "chat":
 		player.playerTyping()
+	case "genMesh":
+		worldMap.Instances = make(map[world.TileType]world.Instance)
+		worldMap.MeshGen(worldOption)
+		player.gameStatus = "move"
 	}
 
 	camera.SetTarget(player.pos)
@@ -179,6 +184,7 @@ func getYCollision(pos rl.Vector3) float32 {
 	}
 
 	worldTile := worldMap.Tiles[int(math.Floor(float64(posZ)))][int(math.Floor(float64(posX)))]
+
 	if worldTile.Noise < 0.3 {
 		return 0.3 * worldOption.TileSize * worldOption.HeightMulti
 	} else {

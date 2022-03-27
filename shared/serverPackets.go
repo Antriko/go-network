@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"log"
 	"time"
+
+	"github.com/Antriko/go-network/world"
 )
 
 // C2SChatMessagePacket will send the server the chat message
@@ -33,7 +34,7 @@ func (m *S2CUpdatePlayersPosPacket) Marshal() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// Unmarshal converts []byte into a C2SChatMessagePacket
+// Unmarshal converts []byte into a S2CUpdatePlayersPosPacket
 func (m *S2CUpdatePlayersPosPacket) Unmarshal(b []byte) error {
 	json.Unmarshal(b, &m)
 
@@ -45,7 +46,7 @@ func (m *S2CUpdatePlayersPosPacket) Unmarshal(b []byte) error {
 type S2CChatMessagePacket struct {
 	Username string    `json:"u"`    // Username for time being
 	Type     ChatType  `json:"t"`    // All/PM/Command
-	Time     time.Time `json:"time"` // Time is was recieved by server
+	Time     time.Time `json:"time"` // Time it was recieved by server
 	Message  string    `json:"m"`
 }
 
@@ -95,10 +96,16 @@ func (m *S2CUserInformationPacket) Unmarshal(b []byte) error {
 	return nil
 }
 
+// *world.WorldStruct but want to ignore instances
+type S2CSendWorldPacket struct {
+	WorldTiles [][]world.MapTile `json:"t"`
+	Size       int               `json:"s"`
+}
+
 // Marshal converts a UserFinishedSetupPacket into []byte
 func (u *S2CSendWorldPacket) Marshal() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.LittleEndian, Reliable)
+	binary.Write(buf, binary.LittleEndian, Unreliable)
 	binary.Write(buf, binary.LittleEndian, S2CSendWorldPacketType)
 
 	userBytes, _ := json.Marshal(u)
@@ -109,9 +116,7 @@ func (u *S2CSendWorldPacket) Marshal() ([]byte, error) {
 
 // Unmarshal converts []byte into a S2CSendWorldPacket
 func (u *S2CSendWorldPacket) Unmarshal(b []byte) error {
-	log.Println(len(b))
-	json.Unmarshal(b, &u)
-	log.Println(len(b))
+	json.Unmarshal(b, u)
 	return nil
 }
 
