@@ -20,8 +20,8 @@ var green = color.New(color.FgBlack, color.BgGreen).Render
 var magenta = color.New(color.FgBlack, color.BgMagenta).Render
 
 // Packet time
-var PacketTime = time.Second
-var DisplayPackets = true
+var PacketTime = time.Second / 32
+var DisplayPackets = false
 
 // Errors
 var (
