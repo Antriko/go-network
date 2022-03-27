@@ -150,6 +150,7 @@ func serverPacketHandler(conn *shared.DualConnection) {
 					}
 
 				case *shared.C2SChatMessagePacket:
+					log.Printf("%v %v %v", typed.Username, typed.Type, typed.Message)
 					for userConn := range AllConnections {
 						userConn.DataWriteChan <- &shared.S2CChatMessagePacket{
 							Username: typed.Username,
