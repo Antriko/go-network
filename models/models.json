@@ -48,6 +48,9 @@
         "name": "Walter Shirt",
         "file": "models/body/walterShirt.glb"
     },{
+        "name": "Cloud Shirt",
+        "file": "models/body/cloudShirt.glb"
+    },{
         "name": "Maid Outfit",
         "file": "models/body/maidOutfit.glb"
     }],
@@ -61,5 +64,8 @@
     },{
         "name": "Ripped Jeans",
         "file": "models/bottom/rippedJeans.glb"
+    },{
+        "name": "Cargo Shorts",
+        "file": "models/bottom/cargoShorts.glb"
     }]
 }
